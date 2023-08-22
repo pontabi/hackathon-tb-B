@@ -65,7 +65,10 @@ const onReceivePublish = (data) => {
 const registerSocketEvent = () => {
   // 入室イベントを受け取ったら実行
   socket.on("enterEvent", (data) => {
-
+    if (!data) {
+      return
+    }
+    chatList.unshift(data)
   })
 
   // 退室イベントを受け取ったら実行

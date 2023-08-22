@@ -1,5 +1,5 @@
 <script setup>
-import { defineCustomElement, inject, ref } from "vue"
+import { inject, ref } from "vue"
 import { useRouter } from "vue-router"
 import io from "socket.io-client"
 
@@ -23,7 +23,7 @@ const onEnter = () => {
   if(!inputUserName.value) return;
 
   // 入室メッセージを送信
-  socket.emit("enterEvent", "入室しました")
+  socket.emit("enterEvent", `${ inputUserName.value }さんが入室しました`)
 
   // 全体で使用するnameに入力されたユーザー名を格納
   userName.value = inputUserName.value
