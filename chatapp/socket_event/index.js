@@ -5,8 +5,8 @@ export default (io, socket) => {
   })
 
   // 退室メッセージをクライアントに送信する
-  socket.on("exitEvent", (data) => {
-    socket.broadcast.emit("exitEvent", data)
+  socket.on("exitEvent", (leftUserName) => {
+    socket.broadcast.emit("exitEvent", leftUserName)
   })
 
   // 投稿メッセージを送信する

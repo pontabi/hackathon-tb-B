@@ -30,15 +30,14 @@ const onPublish = () => {
   chatContent.value = ""
 }
 
-// 退室メッセージをサーバに送信する
+// 退室者をサーバに送信する
 const onExit = () => {
-  socket.emit("exitEvent", `${ userName.value }さんが退室しました`)
-
+  socket.emit("exitEvent", userName.value)
 }
 
 // メモを画面上に表示する
 const onMemo = () => {
-  
+
   // メモの内容を表示
   chatList.push(`${userName.value}さん：${chatContent.value}` )
   // 入力欄を初期化
@@ -52,9 +51,10 @@ const onReceiveEnter = (data) => {
   chatList.push()
 }
 
-// サーバから受信した退室メッセージを受け取り画面上に表示する
-const onReceiveExit = (data) => {
-  chatList.push()
+// サーバから受信した退室者を受け取り画面上に退室メッセージを表示する
+const onReceiveExit = (leftUserName) => {
+  const leftLog = `${leftUserName}さんが退室しました。`
+  chatList.push(leftLog)
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
@@ -75,18 +75,16 @@ const registerSocketEvent = () => {
   })
 
   // 退室イベントを受け取ったら実行
-  socket.on("exitEvent", (data) => {
-    if (!data) {
-      return
-    }
-    chatList.unshift(data)
+  socket.on("exitEvent", (leftUserName) => {
+    if (!leftUserName) return
+    onReceiveExit(leftUserName)
   })
 
   // 投稿イベントを受け取ったら実行
   socket.on("publishEvent", (data) => {
     const chatMsg = `${userName.value}さん：${data}`
     onReceivePublish(chatMsg)
-  } 
+  }
   )
 }
 // #endregion
