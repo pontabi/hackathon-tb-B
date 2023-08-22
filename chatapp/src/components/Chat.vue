@@ -31,6 +31,7 @@ const onPublish = () => {
 
 // 退室メッセージをサーバに送信する
 const onExit = () => {
+  socket.emit("exitEvent", `${ userName.value }さんが退室しました`)
 
 }
 
@@ -73,7 +74,10 @@ const registerSocketEvent = () => {
 
   // 退室イベントを受け取ったら実行
   socket.on("exitEvent", (data) => {
-
+    if (!data) {
+      return
+    }
+    chatList.unshift(data)
   })
 
   // 投稿イベントを受け取ったら実行
