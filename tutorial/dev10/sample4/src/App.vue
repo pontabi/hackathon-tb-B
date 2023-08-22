@@ -1,12 +1,18 @@
 <script setup>
 const handleClick = () => {
-  alert("繝懊ち繝ｳ縺後け繝ｪ繝�繧ｯ縺輔ｌ縺ｾ縺励◆")
+  alert("ボタンがクリックされました")
 }
+
+const handleMouseOver = () => {
+ alert("ボタンがマウスオーバーされました")
+}
+
 </script>
 
 <template>
   <h1>Sample4</h1>
   <button @click="handleClick">click</button>
+  <button @mouseover="handleMouseOver">MouseOver</button>
 </template>
 
 
