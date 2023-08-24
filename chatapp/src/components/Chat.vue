@@ -76,12 +76,10 @@ const onExit = () => {
 
 // メモを画面上に表示する
 const onMemo = () => {
-  // メモの内容を表示
+  // メモの追加
   addChat(userName.value, chatContent.value, "memo")
-  // chatList.push(`${userName.value}さんのメモ：${chatContent.value}` )
   // 入力欄を初期化
   chatContent.value = ""
-
 }
 // #endregion
 
@@ -142,9 +140,6 @@ const registerSocketEvent = () => {
         <button class="button-normal util-ml-8px" @click="onMemo">メモ</button>
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
-        <!-- <ul>
-          <li class="item mt-4" v-for="(chat, i) in chatList" :key="i" v-html="chat"></li>
-        </ul> -->
         <ul>
           <li class="item mt-4" v-for="(content, i) in displayedContents" :key="i" v-html="content"></li>
         </ul>
