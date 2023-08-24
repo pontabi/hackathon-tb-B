@@ -13,6 +13,7 @@ const socket = io()
 // #region reactive variable
 const chatContent = ref("")
 const chatList = reactive([])
+
 // #endregion
 
 // #region lifecycle
@@ -24,8 +25,7 @@ onMounted(() => {
 // #region browser event handler
 // 投稿メッセージをサーバに送信する
 const onPublish = () => {
-  socket.emit("publishEvent", chatContent.value)
-  console.log(chatContent.value)
+  socket.emit("publishEvent", userName.value, chatContent.value)
   // 入力欄を初期化
   chatContent.value = ""
 }
@@ -37,7 +37,6 @@ const onExit = () => {
 
 // メモを画面上に表示する
 const onMemo = () => {
-
   // メモの内容を表示
   chatList.push(`${userName.value}さん：${chatContent.value}` )
   // 入力欄を初期化
@@ -81,8 +80,8 @@ const registerSocketEvent = () => {
   })
 
   // 投稿イベントを受け取ったら実行
-  socket.on("publishEvent", (data) => {
-    const chatMsg = `${userName.value}さん：${data}`
+  socket.on("publishEvent", (userName, chatContent) => {
+    const chatMsg = `${userName}さん：${chatContent}`
     onReceivePublish(chatMsg)
   }
   )
