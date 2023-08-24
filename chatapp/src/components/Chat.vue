@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref, reactive, onMounted } from "vue"
+import { inject, ref, reactive, onMounted, computed } from "vue"
 import io from "socket.io-client"
 
 // #region global state
@@ -12,7 +12,46 @@ const socket = io()
 
 // #region reactive variable
 const chatContent = ref("")
+// オブジェクト型の配列を持つ
+// {
+//   user: "Mike",
+//   content: "hello world",
+//   type: "chat / memo / enteredLog / leftLog"
+// }
 const chatList = reactive([])
+const displayedContents = computed(() => {
+  const contents = []
+  for (const chat of chatList) {
+    switch (chat.type) {
+      case "chat":
+        contents.push(`${chat.user}さん：${chat.content}`)
+        break;
+      case "memo":
+        contents.push(`${chat.user}さんのメモ：${chat.content}`)
+        break;
+      case "enteredLog":
+        contents.push(`${chat.user}さんが入室しました`)
+        break;
+      case "leftLog":
+        contents.push(`${chat.user}さんが退出しました`)
+        break;
+    }
+  }
+  return contents
+})
+
+const addChat = (user, content="", type) => {
+  // type引数が chat / memo / enteredLog / leftLog　以外だったらリストに追加しない
+  const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog"].includes(type)
+  if (hasInvalidType) return
+
+  const data = {
+    user: user,
+    content: content,
+    type: type,
+  }
+  chatList.push(data)
+}
 
 // #endregion
 
@@ -38,10 +77,10 @@ const onExit = () => {
 // メモを画面上に表示する
 const onMemo = () => {
   // メモの内容を表示
-  chatList.push(`${userName.value}さん：${chatContent.value}` )
+  addChat(userName.value, chatContent.value, "memo")
+  // chatList.push(`${userName.value}さんのメモ：${chatContent.value}` )
   // 入力欄を初期化
   chatContent.value = ""
-
 
 }
 // #endregion
@@ -49,13 +88,12 @@ const onMemo = () => {
 // #region socket event handler
 // サーバから受信した入室メッセージ画面上に表示する
 const onReceiveEnter = (data) => {
-  chatList.push()
+  // addChat(user, content, type)
 }
 
 // サーバから受信した退室者を受け取り画面上に退室メッセージを表示する
 const onReceiveExit = (leftUserName) => {
-  const leftLog = `${leftUserName}さんが退室しました。`
-  chatList.push(leftLog)
+  addChat(leftUserName, "", "leftLog")
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
@@ -65,8 +103,7 @@ const onReceivePublish = (userName, chatContent) => {
   if (contentCheck) return;
   // chatContent内の改行を正しく表示するために置換
   chatContent = chatContent.replace(/\n/g, "<br>")
-  const postMessage = `${userName}さん：${chatContent}`
-  chatList.push(postMessage)
+  addChat(userName, chatContent, "chat")
 }
 // #endregion
 
@@ -83,7 +120,6 @@ const registerSocketEvent = () => {
 
   // 退室イベントを受け取ったら実行
   socket.on("exitEvent", (leftUserName) => {
-    if (!leftUserName) return
     onReceiveExit(leftUserName)
   })
 
@@ -104,11 +140,13 @@ const registerSocketEvent = () => {
       <div class="mt-5">
         <button class="button-normal" @click="onPublish">投稿</button>
         <button class="button-normal util-ml-8px" @click="onMemo">メモ</button>
-
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
-        <ul>
+        <!-- <ul>
           <li class="item mt-4" v-for="(chat, i) in chatList" :key="i" v-html="chat"></li>
+        </ul> -->
+        <ul>
+          <li class="item mt-4" v-for="(content, i) in displayedContents" :key="i" v-html="content"></li>
         </ul>
       </div>
     </div>
