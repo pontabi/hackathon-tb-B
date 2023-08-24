@@ -60,6 +60,11 @@ const onReceiveExit = (leftUserName) => {
 
 // サーバから受信した投稿メッセージを画面上に表示する
 const onReceivePublish = (userName, chatContent) => {
+  // 空、空行、スペースのみの場合は表示しない
+  const contentCheck = [...chatContent].every(char => char === '\n' || char === ' ' || char === '　');
+  if (contentCheck) return;
+  // chatContent内の改行を正しく表示するために置換
+  chatContent = chatContent.replace(/\n/g, "<br>")
   const postMessage = `${userName}さん：${chatContent}`
   chatList.push(postMessage)
 }
@@ -103,7 +108,7 @@ const registerSocketEvent = () => {
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
         <ul>
-          <li class="item mt-4" v-for="(chat, i) in chatList" :key="i">{{ chat }}</li>
+          <li class="item mt-4" v-for="(chat, i) in chatList" :key="i" v-html="chat"></li>
         </ul>
       </div>
     </div>
