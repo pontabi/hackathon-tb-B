@@ -81,6 +81,10 @@ const registerSocketEvent = () => {
 
   // 投稿イベントを受け取ったら実行
   socket.on("publishEvent", (userName, chatContent) => {
+    // 空、空行のみ、スペースのみの投稿は不可とする
+    const contentCheck = [...chatContent].every(char => char === '\n' || char === ' ' || char === '　')
+    if (contentCheck) return
+
     const chatMsg = `${userName}さん：${chatContent}`
     onReceivePublish(chatMsg)
   }
