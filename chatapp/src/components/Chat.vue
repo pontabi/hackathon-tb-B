@@ -41,6 +41,8 @@ const onMemo = () => {
   chatList.push(`${userName.value}さん：${chatContent.value}` )
   // 入力欄を初期化
   chatContent.value = ""
+
+
 }
 // #endregion
 
@@ -57,8 +59,9 @@ const onReceiveExit = (leftUserName) => {
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
-const onReceivePublish = (data) => {
-  chatList.push(data)
+const onReceivePublish = (userName, chatContent) => {
+  const postMessage = `${userName}さん：${chatContent}`
+  chatList.push(postMessage)
 }
 // #endregion
 
@@ -81,14 +84,8 @@ const registerSocketEvent = () => {
 
   // 投稿イベントを受け取ったら実行
   socket.on("publishEvent", (userName, chatContent) => {
-    // 空、空行のみ、スペースのみの投稿は不可とする
-    const contentCheck = [...chatContent].every(char => char === '\n' || char === ' ' || char === '　')
-    if (contentCheck) return
-
-    const chatMsg = `${userName}さん：${chatContent}`
-    onReceivePublish(chatMsg)
-  }
-  )
+    onReceivePublish(userName, chatContent)
+  })
 }
 // #endregion
 </script>
