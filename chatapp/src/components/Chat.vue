@@ -19,6 +19,7 @@ const chatContent = ref("")
 //   type: "chat / memo / enteredLog / leftLog"
 // }
 const chatList = reactive([])
+
 const displayedContents = computed(() => {
   const contents = []
   for (const chat of chatList) {
@@ -64,6 +65,8 @@ onMounted(() => {
 // #region browser event handler
 // 投稿メッセージをサーバに送信する
 const onPublish = () => {
+  // 空、空行、スペースのみの場合は送信しない
+  if (!chatContent.value.trim()) return;
   socket.emit("publishEvent", userName.value, chatContent.value)
   // 入力欄を初期化
   chatContent.value = ""
@@ -95,13 +98,8 @@ const onReceiveExit = (leftUserName) => {
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
-const onReceivePublish = (userName, chatContent) => {
-  // 空、空行、スペースのみの場合は表示しない
-  const contentCheck = [...chatContent].every(char => char === '\n' || char === ' ' || char === '　');
-  if (contentCheck) return;
-  // chatContent内の改行を正しく表示するために置換
-  chatContent = chatContent.replace(/\n/g, "<br>")
-  addChat(userName, chatContent, "chat")
+const onReceivePublish = (nameValue, contentValue) => {
+  addChat(nameValue, contentValue, "chat")
 }
 // #endregion
 
@@ -122,8 +120,8 @@ const registerSocketEvent = () => {
   })
 
   // 投稿イベントを受け取ったら実行
-  socket.on("publishEvent", (userName, chatContent) => {
-    onReceivePublish(userName, chatContent)
+  socket.on("publishEvent", (nameValue, contentValue) => {
+    onReceivePublish(nameValue, contentValue)
   })
 }
 // #endregion
@@ -141,7 +139,7 @@ const registerSocketEvent = () => {
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
         <ul>
-          <li class="item mt-4" v-for="(content, i) in displayedContents" :key="i" v-html="content"></li>
+          <li class="item mt-4" v-for="(content, i) in displayedContents" :key="i">{{ content }}</li>
         </ul>
       </div>
     </div>
@@ -164,6 +162,7 @@ const registerSocketEvent = () => {
 
 .item {
   display: block;
+  white-space: pre-line;
 }
 
 .util-ml-8px {
