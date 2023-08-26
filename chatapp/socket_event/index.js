@@ -13,4 +13,9 @@ export default (io, socket) => {
   socket.on("publishEvent", (nameValue, contentValue) => {
     io.sockets.emit("publishEvent", nameValue, contentValue)
   })
+
+  // 削除する投稿オブジェクトを送信する
+  socket.on("deleteEvent", (chatObj) => {
+    io.sockets.emit("deleteEvent", chatObj)
+  })
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref, reactive, onMounted, computed } from "vue"
+import { inject, ref, reactive, onMounted, computed, watch } from "vue"
 import io from "socket.io-client"
 
 // #region global state
@@ -14,42 +14,43 @@ const socket = io()
 const chatContent = ref("")
 // オブジェクト型の配列を持つ
 // {
+//   id: datetime(temporary)
 //   user: "Mike",
 //   content: "hello world",
 //   type: "chat / memo / enteredLog / leftLog"
 // }
 const chatList = reactive([])
 
-const displayedContents = computed(() => {
-  const contents = []
-  for (const chat of chatList) {
-    switch (chat.type) {
-      case "chat":
-        contents.push(`${chat.user}さん：${chat.content}`)
-        break;
-      case "memo":
-        contents.push(`${chat.user}さんのメモ：${chat.content}`)
-        break;
-      case "enteredLog":
-        contents.push(`${chat.user}さんが入室しました`)
-        break;
-      case "leftLog":
-        contents.push(`${chat.user}さんが退出しました`)
-        break;
-    }
+// addChat内で使う関数
+const getFullText = (user, content, type) => {
+  switch (type) {
+    case "chat":
+      return `${user}さん：${content}`
+    case "memo":
+      return `${user}さんのメモ：${content}`
+    case "enteredLog":
+      return `${user}さんが入室しました`
+    case "leftLog":
+      return `${user}さんが退出しました`
+    default:
+      return undefined
   }
-  return contents
-})
+}
 
 const addChat = (user, content="", type) => {
-  // type引数が chat / memo / enteredLog / leftLog　以外だったらリストに追加しない
+  // type引数が chat / memo / enteredLog / leftLog　以外だったら早期リターン
   const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog"].includes(type)
   if (hasInvalidType) return
 
+  const id = new Date().valueOf();
+  const fullText = getFullText(user, content, type)
+
   const data = {
+    id: id,
     user: user,
     content: content,
     type: type,
+    fullText: fullText
   }
   chatList.push(data)
 }
@@ -70,6 +71,24 @@ const onPublish = () => {
   socket.emit("publishEvent", userName.value, chatContent.value)
   // 入力欄を初期化
   chatContent.value = ""
+}
+
+// 投稿削除イベントをサーバーに送信する
+const onDelete = (chatId) => {
+  const chatObj = chatList.find(el => el.id === chatId)
+  // chatが存在しない場合、早期リターン
+  if (!chatObj) {
+    alert("The chat is not exist")
+    return
+  }
+  // メモの時は、サーバーには送信せず、削除を反映
+  if (chatObj.type === "memo") {
+    const removeIdx = chatList.findIndex(el => el.id === chatObj.id)
+    chatList.splice(removeIdx, 1)
+    return
+  }
+
+  socket.emit("deleteEvent", chatObj)
 }
 
 // 退室者をサーバに送信する
@@ -101,6 +120,12 @@ const onReceiveExit = (leftUserName) => {
 const onReceivePublish = (nameValue, contentValue) => {
   addChat(nameValue, contentValue, "chat")
 }
+
+// サーバから受信した投稿メッセージを削除する
+const onReceiveDelete = (chatObj) => {
+  const removeIdx = chatList.findIndex(el => el.id === chatObj.id)
+  chatList.splice(removeIdx, 1)
+}
 // #endregion
 
 // #region local methods
@@ -120,7 +145,20 @@ const registerSocketEvent = () => {
   socket.on("publishEvent", (nameValue, contentValue) => {
     onReceivePublish(nameValue, contentValue)
   })
+
+  // 削除イベントを受け取ったら実行
+  socket.on("deleteEvent", (chatObj) => {
+    onReceiveDelete(chatObj)
+  })
 }
+
+// 削除ボタンをつけるか否か
+const isDeletable = (chat) => {
+  const hasAuth = chat.user === userName.value;
+  const isValidType = chat.type === "chat" || chat.type === "memo";
+  return hasAuth && isValidType;
+};
+
 // #endregion
 </script>
 
@@ -136,7 +174,10 @@ const registerSocketEvent = () => {
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
         <ul>
-          <li class="item mt-4" v-for="(content, i) in displayedContents" :key="i">{{ content }}</li>
+          <li class="item mt-4" v-for="chat in chatList" :key="chat.id">
+            <p>{{ chat.fullText }}</p>
+            <button v-if="isDeletable(chat)" @click="onDelete(chat.id)" class="button-normal">Delete</button>
+          </li>
         </ul>
       </div>
     </div>
