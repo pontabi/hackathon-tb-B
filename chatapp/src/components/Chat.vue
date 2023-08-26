@@ -88,8 +88,8 @@ const onMemo = () => {
 
 // #region socket event handler
 // サーバから受信した入室メッセージ画面上に表示する
-const onReceiveEnter = (data) => {
-  // addChat(user, content, type)
+const onReceiveEnter = (enteredUserName) => {
+  addChat(enteredUserName, "", "enteredLog")
 }
 
 // サーバから受信した退室者を受け取り画面上に退室メッセージを表示する
@@ -107,11 +107,8 @@ const onReceivePublish = (nameValue, contentValue) => {
 // イベント登録をまとめる
 const registerSocketEvent = () => {
   // 入室イベントを受け取ったら実行
-  socket.on("enterEvent", (data) => {
-    if (!data) {
-      return
-    }
-    chatList.unshift(data)
+  socket.on("enterEvent", (enteredUserName) => {
+    onReceiveEnter(enteredUserName);
   })
 
   // 退室イベントを受け取ったら実行

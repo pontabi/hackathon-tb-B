@@ -23,7 +23,7 @@ const onEnter = () => {
   if(!inputUserName.value) return;
 
   // 入室メッセージを送信
-  socket.emit("enterEvent", `${ inputUserName.value }さんが入室しました`)
+  socket.emit("enterEvent", inputUserName.value)
 
   // 全体で使用するnameに入力されたユーザー名を格納
   userName.value = inputUserName.value
