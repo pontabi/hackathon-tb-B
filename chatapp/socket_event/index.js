@@ -5,13 +5,13 @@ export default (io, socket) => {
   })
 
   // 退室メッセージをクライアントに送信する
-  socket.on("exitEvent", (leftUserName) => {
-    socket.broadcast.emit("exitEvent", leftUserName)
+  socket.on("exitEvent", (leftUserName, time) => {
+    socket.broadcast.emit("exitEvent", leftUserName, time)
   })
 
   // 投稿メッセージを送信する
-  socket.on("publishEvent", (nameValue, contentValue) => {
-    io.sockets.emit("publishEvent", nameValue, contentValue)
+  socket.on("publishEvent", (nameValue, contentValue, time) => {
+    io.sockets.emit("publishEvent", nameValue, contentValue, time)
   })
 
   // 削除する投稿オブジェクトを送信する

@@ -2,6 +2,7 @@
 import { inject, ref, reactive, onMounted, computed, watch } from "vue"
 import io from "socket.io-client"
 
+
 // #region global state
 const userName = inject("userName")
 // #endregion
@@ -18,38 +19,46 @@ const chatContent = ref("")
 //   user: "Mike",
 //   content: "hello world",
 //   type: "chat / memo / enteredLog / leftLog"
+//   time:
 // }
 const chatList = reactive([])
 
+//時刻表示を成形するのに使う関数
+const takeTime = ()=>{
+  let date = new Date()
+  return `${date.getFullYear()}/${date.getMonth()}/${date.getDay()} ${date.getHours()}時${date.getMinutes()}分${date.getSeconds()}秒`
+} 
+
 // addChat内で使う関数
-const getFullText = (user, content, type) => {
+const getFullText = (user, content, type, time) => {
   switch (type) {
     case "chat":
-      return `${user}さん：${content}`
+      return `${user}さん：${content}：${time}`
     case "memo":
-      return `${user}さんのメモ：${content}`
+      return `${user}さんのメモ：${content}：${time}`
     case "enteredLog":
-      return `${user}さんが入室しました`
+      return `${user}さんが入室しました：${time}`
     case "leftLog":
-      return `${user}さんが退出しました`
+      return `${user}さんが退出しました：${time}`
     default:
       return undefined
   }
 }
 
-const addChat = (user, content="", type) => {
+const addChat = (user, content="", type, time) => {
   // type引数が chat / memo / enteredLog / leftLog　以外だったら早期リターン
   const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog"].includes(type)
   if (hasInvalidType) return
 
   const id = new Date().valueOf();
-  const fullText = getFullText(user, content, type)
+  const fullText = getFullText(user, content, type, time)
 
   const data = {
     id: id,
     user: user,
     content: content,
     type: type,
+    time: time,
     fullText: fullText
   }
   chatList.push(data)
@@ -68,7 +77,7 @@ onMounted(() => {
 const onPublish = () => {
   // 空、空行、スペースのみの場合は送信しない
   if (!chatContent.value.trim()) return;
-  socket.emit("publishEvent", userName.value, chatContent.value)
+  socket.emit("publishEvent", userName.value, chatContent.value, takeTime())
   // 入力欄を初期化
   chatContent.value = ""
 }
@@ -93,13 +102,13 @@ const onDelete = (chatId) => {
 
 // 退室者をサーバに送信する
 const onExit = () => {
-  socket.emit("exitEvent", userName.value)
+  socket.emit("exitEvent", userName.value, takeTime())
 }
 
 // メモを画面上に表示する
 const onMemo = () => {
   // メモの追加
-  addChat(userName.value, chatContent.value, "memo")
+  addChat(userName.value, chatContent.value, "memo", takeTime())
   // 入力欄を初期化
   chatContent.value = ""
 }
@@ -108,17 +117,17 @@ const onMemo = () => {
 // #region socket event handler
 // サーバから受信した入室メッセージ画面上に表示する
 const onReceiveEnter = (enteredUserName) => {
-  addChat(enteredUserName, "", "enteredLog")
+  addChat(enteredUserName, "", "enteredLog", takeTime())
 }
 
 // サーバから受信した退室者を受け取り画面上に退室メッセージを表示する
-const onReceiveExit = (leftUserName) => {
-  addChat(leftUserName, "", "leftLog")
+const onReceiveExit = (leftUserName, time) => {
+  addChat(leftUserName, "", "leftLog", time)
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
-const onReceivePublish = (nameValue, contentValue) => {
-  addChat(nameValue, contentValue, "chat")
+const onReceivePublish = (nameValue, contentValue, time) => {
+  addChat(nameValue, contentValue, "chat", time)
 }
 
 // サーバから受信した投稿メッセージを削除する
@@ -137,13 +146,13 @@ const registerSocketEvent = () => {
   })
 
   // 退室イベントを受け取ったら実行
-  socket.on("exitEvent", (leftUserName) => {
-    onReceiveExit(leftUserName)
+  socket.on("exitEvent", (leftUserName, time) => {
+    onReceiveExit(leftUserName, time)
   })
 
   // 投稿イベントを受け取ったら実行
-  socket.on("publishEvent", (nameValue, contentValue) => {
-    onReceivePublish(nameValue, contentValue)
+  socket.on("publishEvent", (nameValue, contentValue, time) => {
+    onReceivePublish(nameValue, contentValue, time)
   })
 
   // 削除イベントを受け取ったら実行
