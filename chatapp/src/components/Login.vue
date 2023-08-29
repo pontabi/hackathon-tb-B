@@ -20,7 +20,7 @@ const inputUserName = ref("")
 // 入室メッセージをクライアントに送信する
 const onEnter = () => {
   // ユーザー名が入力されているかチェック
-  if(!inputUserName.value) return;
+  if (!inputUserName.value) return;
 
   // 入室メッセージを送信
   socket.emit("enterEvent", inputUserName.value)
@@ -35,14 +35,18 @@ const onEnter = () => {
 </script>
 
 <template>
-  <div class="mx-auto my-5 px-4">
-    <h1 class="text-h3 font-weight-medium">Vue.js Chat サンプル</h1>
-    <div class="mt-10">
-      <p>ユーザー名</p>
-      <input type="text" class="user-name-text" v-model="inputUserName"  />
+  <form>
+    <div class="container d-flex align-items-center">
+      <div class="mx-auto my-5 px-4 border rounded-3">
+        <h1 class="text-h3 font-weight-medium my-5">Vue.js Chat サンプル</h1>
+        <div class="mt-10">
+          <p>ユーザー名</p>
+          <input type="text" class="user-name-text form-control w-100" v-model="inputUserName" />
+        </div>
+        <button type="button" @click="onEnter" class="btn btn-primary w-100 mb-5">入室する</button>
+      </div>
     </div>
-    <button type="button" @click="onEnter" class="button-normal">入室する</button>
-  </div>
+  </form>
 </template>
 
 <style scoped>
