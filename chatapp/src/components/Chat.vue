@@ -221,7 +221,7 @@ const isDeletable = (chat) => {
     <h1 class="text-h3 font-weight-medium">Vue.js Chat チャットルーム</h1>
     <div class="mt-10">
       <p>ログインユーザ：{{ userName }}さん</p>
-      <textarea variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area" v-model="chatContent" @keydown.enter="onPublish"></textarea>
+      <textarea variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area" v-model="chatContent" @keyup.enter="onPublish"></textarea>
       <textarea variant="outlined" placeholder="相手のユーザーネームを入力" rows="1" class="area" v-model="address"></textarea>
       <div class="mt-5">
         <button class="button-normal" @click="onPublish">投稿</button>
