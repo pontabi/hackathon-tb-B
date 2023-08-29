@@ -16,6 +16,13 @@ const socket = io()
 const inputUserName = ref("")
 // #endregion
 
+// エンターキーで投稿する
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    onEnter()
+  }
+})
+
 // #region browser event handler
 // 入室メッセージをクライアントに送信する
 const onEnter = () => {
