@@ -10,8 +10,8 @@ export default (io, socket) => {
   })
 
   // 投稿メッセージを送信する
-  socket.on("publishEvent", (nameValue, contentValue, time) => {
-    io.sockets.emit("publishEvent", nameValue, contentValue, time)
+  socket.on("publishEvent", (nameValue, contentValue, time, address) => {
+    io.sockets.emit("publishEvent", nameValue, contentValue, time, address)
   })
 
   // 削除する投稿オブジェクトを送信する

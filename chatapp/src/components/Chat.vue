@@ -14,13 +14,15 @@ const socket = io()
 // #region reactive variable
 const chatContent = ref("")
 // オブジェクト型の配列を持つ
-// {
+// {"
 //   id: datetime(temporary)
 //   user: "Mike",
 //   content: "hello world",
-//   type: "chat / memo / enteredLog / leftLog"
-//   time:
-// }f
+//   type: "chat / memo / enteredLog / leftLog / DMSend / DMReceive",
+//   time: "2023/7/1 22時30分0秒"
+// }
+
+const address = ref("")
 const chatList = reactive([])
 
 //時刻表示を成形するのに使う関数
@@ -40,6 +42,10 @@ const getFullText = (user, content, type, time) => {
       return `${user}さんが入室しました：${time}`
     case "leftLog":
       return `${user}さんが退出しました：${time}`
+    case "DMReceive":
+      return `${user}さんからのDM：${content}：${time}`
+    case "DMSend":
+      return `自分で送ったDM：${content}：${time}`
     default:
       return undefined
   }
@@ -47,7 +53,7 @@ const getFullText = (user, content, type, time) => {
 
 const addChat = (user, content="", type, time) => {
   // type引数が chat / memo / enteredLog / leftLog　以外だったら早期リターン
-  const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog"].includes(type)
+  const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog", "DMReceive", "DMSend"].includes(type)
   if (hasInvalidType) return
 
   const id = new Date().valueOf();
@@ -77,9 +83,10 @@ onMounted(() => {
 const onPublish = () => {
   // 空、空行、スペースのみの場合は送信しない
   if (!chatContent.value.trim()) return;
-  socket.emit("publishEvent", userName.value, chatContent.value, takeTime())
+  socket.emit("publishEvent", userName.value, chatContent.value, takeTime(), address.value)
   // 入力欄を初期化
   chatContent.value = ""
+  address.value = ""
 }
 
 // エンターキーで投稿する
@@ -133,8 +140,16 @@ const onReceiveExit = (leftUserName, time) => {
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
-const onReceivePublish = (nameValue, contentValue, time) => {
-  addChat(nameValue, contentValue, "chat", time)
+const onReceivePublish = (nameValue, contentValue, time, address) => {
+  console.log(nameValue)
+  if(address==""){
+      addChat(nameValue, contentValue, "chat", time)
+  } else if(address==userName.value){
+      addChat(nameValue, contentValue, "DMReceive", time)
+  } else if(nameValue==userName.value){
+    addChat(nameValue, contentValue, "DMSend", time)
+  }
+  
 }
 
 // サーバから受信した投稿メッセージを削除する
@@ -158,8 +173,8 @@ const registerSocketEvent = () => {
   })
 
   // 投稿イベントを受け取ったら実行
-  socket.on("publishEvent", (nameValue, contentValue, time) => {
-    onReceivePublish(nameValue, contentValue, time)
+  socket.on("publishEvent", (nameValue, contentValue, time, address) => {
+    onReceivePublish(nameValue, contentValue, time, address)
   })
 
   // 削除イベントを受け取ったら実行
@@ -184,6 +199,7 @@ const isDeletable = (chat) => {
     <div class="mt-10">
       <p>ログインユーザ：{{ userName }}さん</p>
       <textarea variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area" v-model="chatContent"></textarea>
+      <textarea variant="outlined" placeholder="相手のユーザーネームを入力" rows="1" class="area" v-model="address"></textarea>
       <div class="mt-5">
         <button class="button-normal" @click="onPublish">投稿</button>
         <button class="button-normal util-ml-8px" @click="onMemo">メモ</button>
