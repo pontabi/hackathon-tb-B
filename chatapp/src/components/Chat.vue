@@ -20,14 +20,14 @@ const chatContent = ref("")
 //   content: "hello world",
 //   type: "chat / memo / enteredLog / leftLog"
 //   time:
-// }
+// }f
 const chatList = reactive([])
 
 //時刻表示を成形するのに使う関数
 const takeTime = ()=>{
   let date = new Date()
   return `${date.getFullYear()}/${date.getMonth()}/${date.getDay()} ${date.getHours()}時${date.getMinutes()}分${date.getSeconds()}秒`
-} 
+}
 
 // addChat内で使う関数
 const getFullText = (user, content, type, time) => {
