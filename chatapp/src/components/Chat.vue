@@ -84,6 +84,7 @@ const onPublish = () => {
   // 空、空行、スペースのみの場合は送信しない
   if (!chatContent.value.trim()) return;
   socket.emit("publishEvent", userName.value, chatContent.value, takeTime(), address.value)
+
   // 入力欄を初期化
   chatContent.value = ""
   address.value = ""
@@ -126,6 +127,16 @@ const onMemo = () => {
   // 入力欄を初期化
   chatContent.value = ""
 }
+
+
+// 休止フラグ
+let paused = false
+// 一時休止にする 休止中はほかの人からの投稿が表示されないようにしたい。
+const onPause = () => {
+  paused = !paused
+  console.log(paused)
+}
+
 // #endregion
 
 // #region socket event handler
@@ -140,16 +151,20 @@ const onReceiveExit = (leftUserName, time) => {
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
+
 const onReceivePublish = (nameValue, contentValue, time, address) => {
   console.log(nameValue)
-  if(address==""){
+  if (!paused) {
+    if(address==""){
       addChat(nameValue, contentValue, "chat", time)
-  } else if(address==userName.value){
+    } else if(address==userName.value){
       addChat(nameValue, contentValue, "DMReceive", time)
-  } else if(nameValue==userName.value){
-    addChat(nameValue, contentValue, "DMSend", time)
-  }
-  
+    } else if(nameValue==userName.value){
+      addChat(nameValue, contentValue, "DMSend", time)
+    } 
+  } else {
+    console.log("受信を一時停止しています")
+  } 
 }
 
 // サーバから受信した投稿メッセージを削除する
@@ -214,8 +229,11 @@ const isDeletable = (chat) => {
       </div>
     </div>
     <router-link to="/" class="link">
-      <button type="button" class="button-normal button-exit" @click="onExit">退室する</button>
+      <button type="button" class="button-normal button-exit " @click="onExit">退室する</button>
     </router-link>
+    <button v-if="!paused" type="button" class="button-normal util-ml-8px" @click="onPause">一時停止</button>
+    <button v-else type="button" class="button-normal util-ml-8px" @click="onPause">受信再開</button>
+    <!--<button type="button" class="button-normal util-ml-8px" @click="onPause">{{ paused ? '受信再開' : '一時休止' }}</button>-->
   </div>
 </template>
 
