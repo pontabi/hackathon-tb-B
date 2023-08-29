@@ -25,6 +25,23 @@ const chatContent = ref("")
 const address = ref("")
 const chatList = reactive([])
 
+// falseで昇順
+const sortOrder = ref(false);
+
+// ソートボタンが押された時に動作　　sortOrderの値を逆にする
+const sortOrderButton = () => {
+  sortOrder.value = !sortOrder.value
+}
+
+// sortOrderがfalseなら昇順、trueなら降順
+const sortedChatList = computed(() => {
+  if (sortOrder.value) {
+    return chatList.slice().reverse();
+  } else {
+    return chatList.slice();
+  }
+});
+
 //時刻表示を成形するのに使う関数
 const takeTime = ()=>{
   let date = new Date()
@@ -67,7 +84,7 @@ const addChat = (user, content="", type, time) => {
     time: time,
     fullText: fullText
   }
-  chatList.push(data)
+    chatList.push(data)
 }
 
 // #endregion
@@ -220,8 +237,9 @@ const isDeletable = (chat) => {
         <button class="button-normal util-ml-8px" @click="onMemo">メモ</button>
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
+        <button type="button" class="button-normal" @click="sortOrderButton">現在: {{ sortOrder ? "降順" : "昇順" }}</button>
         <ul>
-          <li class="item mt-4" v-for="chat in chatList" :key="chat.id">
+          <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.id">
             <p>{{ chat.fullText }}</p>
             <button v-if="isDeletable(chat)" @click="onDelete(chat.id)" class="button-normal">Delete</button>
           </li>
