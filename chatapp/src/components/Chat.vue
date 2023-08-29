@@ -82,6 +82,13 @@ const onPublish = () => {
   chatContent.value = ""
 }
 
+// エンターキーで投稿する
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Enter") {
+    onPublish()
+  }
+})
+
 // 投稿削除イベントをサーバーに送信する
 const onDelete = (chatId) => {
   const chatObj = chatList.find(el => el.id === chatId)
