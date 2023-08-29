@@ -45,7 +45,7 @@ const sortedChatList = computed(() => {
 //時刻表示を成形するのに使う関数
 const takeTime = ()=>{
   let date = new Date()
-  return `${date.getFullYear()}/${date.getMonth()}/${date.getDay()} ${date.getHours()}時${date.getMinutes()}分${date.getSeconds()}秒`
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}時${date.getMinutes()}分${date.getSeconds()}秒`
 }
 
 // addChat内で使う関数
@@ -69,7 +69,7 @@ const getFullText = (user, content, type, time) => {
 }
 
 const addChat = (user, content="", type, time) => {
-  // type引数が chat / memo / enteredLog / leftLog　以外だったら早期リターン
+  // type引数が chat / memo / enteredLog / leftLog / DMReceive / DMSend　以外だったら早期リターン
   const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog", "DMReceive", "DMSend"].includes(type)
   if (hasInvalidType) return
 
@@ -107,13 +107,6 @@ const onPublish = () => {
   address.value = ""
 }
 
-// エンターキーで投稿する
-document.addEventListener("keydown", function(event) {
-  if (event.key === "Enter") {
-    onPublish()
-  }
-})
-
 // 投稿削除イベントをサーバーに送信する
 const onDelete = (chatId) => {
   const chatObj = chatList.find(el => el.id === chatId)
@@ -147,11 +140,10 @@ const onMemo = () => {
 
 
 // 休止フラグ
-let paused = false
+const paused = ref(false)
 // 一時休止にする 休止中はほかの人からの投稿が表示されないようにしたい。
 const onPause = () => {
-  paused = !paused
-  console.log(paused)
+  paused.value = !paused.value
 }
 
 // #endregion
@@ -170,15 +162,14 @@ const onReceiveExit = (leftUserName, time) => {
 // サーバから受信した投稿メッセージを画面上に表示する
 
 const onReceivePublish = (nameValue, contentValue, time, address) => {
-  console.log(nameValue)
-  if (!paused) {
+  if (!paused.value) {
     if(address==""){
       addChat(nameValue, contentValue, "chat", time)
     } else if(address==userName.value){
       addChat(nameValue, contentValue, "DMReceive", time)
     } else if(nameValue==userName.value){
       addChat(nameValue, contentValue, "DMSend", time)
-    } 
+    }
   } else {
     console.log("受信を一時停止しています")
   } 
@@ -230,7 +221,7 @@ const isDeletable = (chat) => {
     <h1 class="text-h3 font-weight-medium">Vue.js Chat チャットルーム</h1>
     <div class="mt-10">
       <p>ログインユーザ：{{ userName }}さん</p>
-      <textarea variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area" v-model="chatContent"></textarea>
+      <textarea variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area" v-model="chatContent" @keydown.enter="onPublish"></textarea>
       <textarea variant="outlined" placeholder="相手のユーザーネームを入力" rows="1" class="area" v-model="address"></textarea>
       <div class="mt-5">
         <button class="button-normal" @click="onPublish">投稿</button>
@@ -249,9 +240,7 @@ const isDeletable = (chat) => {
     <router-link to="/" class="link">
       <button type="button" class="button-normal button-exit " @click="onExit">退室する</button>
     </router-link>
-    <button v-if="!paused" type="button" class="button-normal util-ml-8px" @click="onPause">一時停止</button>
-    <button v-else type="button" class="button-normal util-ml-8px" @click="onPause">受信再開</button>
-    <!--<button type="button" class="button-normal util-ml-8px" @click="onPause">{{ paused ? '受信再開' : '一時休止' }}</button>-->
+    <button type="button" class="button-normal util-ml-8px" @click="onPause">{{ paused ? '受信再開' : '一時休止' }}</button>
   </div>
 </template>
 

@@ -16,13 +16,6 @@ const socket = io()
 const inputUserName = ref("")
 // #endregion
 
-// エンターキーで投稿する
-document.addEventListener("keydown", function(event) {
-  if (event.key === "Enter") {
-    onEnter()
-  }
-})
-
 // #region browser event handler
 // 入室メッセージをクライアントに送信する
 const onEnter = () => {
@@ -48,7 +41,7 @@ const onEnter = () => {
         <h1 class="text-h3 font-weight-medium my-5">Vue.js Chat サンプル</h1>
         <div class="mt-10">
           <p>ユーザー名</p>
-          <input type="text" class="user-name-text form-control w-100" v-model="inputUserName" />
+          <input type="text" class="user-name-text form-control w-100" v-model="inputUserName" @keydown.enter="onEnter" />
         </div>
         <button type="button" @click="onEnter" class="btn btn-primary w-100 mb-5">入室する</button>
       </div>
