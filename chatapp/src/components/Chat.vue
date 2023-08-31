@@ -23,7 +23,7 @@ const chatContent = ref("")
 // }
 
 const address = ref("")
-const chatList = reactive([])
+const chatList = inject("chatList")
 
 // falseで昇順
 const sortOrder = ref(false);
@@ -36,9 +36,9 @@ const sortOrderButton = () => {
 // sortOrderがfalseなら昇順、trueなら降順
 const sortedChatList = computed(() => {
   if (sortOrder.value) {
-    return chatList.slice().reverse();
+    return chatList.value.slice().reverse();
   } else {
-    return chatList.slice();
+    return chatList.value.slice();
   }
 });
 
@@ -49,20 +49,20 @@ const takeTime = ()=>{
 }
 
 // addChat内で使う関数
-const getFullText = (user, content, type, time) => {
-  switch (type) {
+const getFullText = (chat) => {
+  switch (chat.type) {
     case "chat":
-      return `${user}さん：${content}：${time}`
+      return `${chat.user_id}さん：${chat.content}：${chat.created_at}`
     case "memo":
-      return `${user}さんのメモ：${content}：${time}`
+      return `${chat.user_id}さんのメモ：${chat.content}：${chat.created_at}`
     case "enteredLog":
-      return `${user}さんが入室しました：${time}`
+      return `${chat.user_id}さんが入室しました：${chat.created_at}`
     case "leftLog":
-      return `${user}さんが退出しました：${time}`
+      return `${chat.user_id}さんが退出しました：${chat.created_at}`
     case "DMReceive":
-      return `${user}さんからのDM：${content}：${time}`
+      return `${chat.user_id}さんからのDM：${chat.content}：${chat.created_at}`
     case "DMSend":
-      return `自分で送ったDM：${content}：${time}`
+      return `自分で送ったDM：${chat.content}：${chat.created_at}`
     default:
       return undefined
   }
@@ -100,7 +100,8 @@ onMounted(() => {
 const onPublish = () => {
   // 空、空行、スペースのみの場合は送信しない
   if (!chatContent.value.trim()) return;
-  socket.emit("publishEvent", userName.value, chatContent.value, takeTime(), address.value)
+  const now = new Date().toString()
+  socket.emit("publishEvent", userName.value, chatContent.value, "chat", now)
 
   // 入力欄を初期化
   chatContent.value = ""
@@ -161,18 +162,26 @@ const onReceiveExit = (leftUserName, time) => {
 
 // サーバから受信した投稿メッセージを画面上に表示する
 
-const onReceivePublish = (nameValue, contentValue, time, address) => {
-  if (!paused.value) {
-    if(address==""){
-      addChat(nameValue, contentValue, "chat", time)
-    } else if(address==userName.value){
-      addChat(nameValue, contentValue, "DMReceive", time)
-    } else if(nameValue==userName.value){
-      addChat(nameValue, contentValue, "DMSend", time)
-    }
-  } else {
-    console.log("受信を一時停止しています")
-  } 
+const onReceivePublish = (id, userId, content, type, createdAt) => {
+  // if (!paused.value) {
+  //   if(address==""){
+  //     addChat(nameValue, contentValue, "chat", time)
+  //   } else if(address==userName.value){
+  //     addChat(nameValue, contentValue, "DMReceive", time)
+  //   } else if(nameValue==userName.value){
+  //     addChat(nameValue, contentValue, "DMSend", time)
+  //   }
+  // } else {
+  //   console.log("受信を一時停止しています")
+  // }
+  const newChat = {
+    id: id,
+    user_id: userId,
+    content: content,
+    type: type,
+    created_at: createdAt
+  }
+  chatList.value.push(newChat)
 }
 
 // サーバから受信した投稿メッセージを削除する
@@ -186,8 +195,8 @@ const onReceiveDelete = (chatObj) => {
 // イベント登録をまとめる
 const registerSocketEvent = () => {
   // 入室イベントを受け取ったら実行
-  socket.on("enterEvent", (enteredUserName) => {
-    onReceiveEnter(enteredUserName);
+  socket.on("enterEvent", (enteredUserName, allChats) => {
+    onReceiveEnter(enteredUserName, allChats);
   })
 
   // 退室イベントを受け取ったら実行
@@ -196,8 +205,8 @@ const registerSocketEvent = () => {
   })
 
   // 投稿イベントを受け取ったら実行
-  socket.on("publishEvent", (nameValue, contentValue, time, address) => {
-    onReceivePublish(nameValue, contentValue, time, address)
+  socket.on("publishEvent", (id, userId, content, type, createdAt) => {
+    onReceivePublish(id, userId, content, type, createdAt)
   })
 
   // 削除イベントを受け取ったら実行
@@ -231,7 +240,7 @@ const isDeletable = (chat) => {
         <button type="button" class="button-normal" @click="sortOrderButton">現在: {{ sortOrder ? "降順" : "昇順" }}</button>
         <ul>
           <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.id">
-            <p>{{ chat.fullText }}</p>
+            <p>{{ getFullText(chat) }}</p>
             <button v-if="isDeletable(chat)" @click="onDelete(chat.id)" class="button-normal">Delete</button>
           </li>
         </ul>

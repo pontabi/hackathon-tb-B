@@ -1,12 +1,14 @@
 <script setup>
-import { provide, ref } from "vue"
+import { provide, reactive, ref } from "vue"
 
 // #region reactive state
 const userName = ref("")
+let chatList = ref([])
 // #endregion
 
 // #region global variable
 provide("userName", userName)
+provide("chatList", chatList)
 // #endregion
 </script>
 
