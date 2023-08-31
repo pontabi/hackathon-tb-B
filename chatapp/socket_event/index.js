@@ -31,18 +31,22 @@ const GET_ALL_CHAT_SQL = `SELECT *, ROWID FROM chat ORDER BY created_at`
 export default (io, socket) => {
   // 入室処理
   socket.on("enterEvent", (name, email) => {
-    db.run(CREATE_USER_SQL)
-    db.run("INSERT INTO user(name, email) VALUES(?, ?)", name, email)
+    db.serialize(() => {
+      db.run(CREATE_USER_SQL)
+      db.run("INSERT INTO user(name, email) VALUES(?, ?)", name, email)
+    })
 
     socket.broadcast.emit("enterEvent", name)
   })
 
   // 全てのチャットを送信する
   socket.on("getAllChatEvent", () => {
-    db.run(CREATE_CHAT_SQL)
-    db.all(GET_ALL_CHAT_SQL, [], (err, rows) => {
-      if (err) throw err
-      io.sockets.emit("getAllChatEvent", rows)
+    db.serialize(() => {
+      db.run(CREATE_CHAT_SQL)
+      db.all(GET_ALL_CHAT_SQL, [], (err, rows) => {
+        if (err) throw err
+        io.sockets.emit("getAllChatEvent", rows)
+      })
     })
   })
 
