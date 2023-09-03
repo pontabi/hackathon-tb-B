@@ -4,7 +4,9 @@ import io from "socket.io-client"
 
 
 // #region global state
-const userName = inject("userName")
+const currentUser = inject("currentUser")
+const chatList = inject("chatList")
+const userList = inject("userList")
 // #endregion
 
 // #region local variable
@@ -15,7 +17,7 @@ const socket = io()
 const chatContent = ref("")
 // オブジェクト型の配列を持つ
 // {"
-//   id: datetime(temporary)
+//   id: Integer（auto increment by sqlite)
 //   user: "Mike",
 //   content: "hello world",
 //   type: "chat / memo / enteredLog / leftLog / DMSend / DMReceive",
@@ -23,7 +25,6 @@ const chatContent = ref("")
 // }
 
 const address = ref("")
-const chatList = inject("chatList")
 
 // falseで昇順
 const sortOrder = ref(false);
@@ -50,41 +51,42 @@ const takeTime = ()=>{
 
 // addChat内で使う関数
 const getFullText = (chat) => {
-  switch (chat.type) {
-    case "chat":
-      return `${chat.user_id}さん：${chat.content}：${chat.created_at}`
-    case "memo":
-      return `${chat.user_id}さんのメモ：${chat.content}：${chat.created_at}`
-    case "enteredLog":
-      return `${chat.user_id}さんが入室しました：${chat.created_at}`
-    case "leftLog":
-      return `${chat.user_id}さんが退出しました：${chat.created_at}`
-    case "DMReceive":
-      return `${chat.user_id}さんからのDM：${chat.content}：${chat.created_at}`
-    case "DMSend":
-      return `自分で送ったDM：${chat.content}：${chat.created_at}`
-    default:
-      return undefined
+  try {
+    const user = userList.value.find(el => el.rowid === chat.user_id)
+    console.log(user.name);
+    switch (chat.type) {
+      case "chat":
+        return `${user.name}さん：${chat.content}：${chat.created_at}`
+      case "memo":
+        return `${chat.user_id}さんのメモ：${chat.content}：${chat.created_at}`
+      case "enteredLog":
+        return `${chat.user_id}さんが入室しました：${chat.created_at}`
+      case "leftLog":
+        return `${chat.user_id}さんが退出しました：${chat.created_at}`
+      case "DMReceive":
+        return `${chat.user_id}さんからのDM：${chat.content}：${chat.created_at}`
+      case "DMSend":
+        return `自分で送ったDM：${chat.content}：${chat.created_at}`
+      default:
+        return undefined
+    }
+  } catch (err) {
+    console.log(err);
   }
 }
 
-const addChat = (user, content="", type, time) => {
+const addChat = (userId, content="", type, time) => {
   // type引数が chat / memo / enteredLog / leftLog / DMReceive / DMSend　以外だったら早期リターン
   const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog", "DMReceive", "DMSend"].includes(type)
   if (hasInvalidType) return
 
-  const id = new Date().valueOf();
-  const fullText = getFullText(user, content, type, time)
-
-  const data = {
-    id: id,
-    user: user,
+  const newChat = {
+    user_id: userId,
     content: content,
     type: type,
     time: time,
-    fullText: fullText
   }
-    chatList.push(data)
+  socket.on("addChat", newChat)
 }
 
 // #endregion
@@ -97,11 +99,17 @@ onMounted(() => {
 
 // #region browser event handler
 // 投稿メッセージをサーバに送信する
-const onPublish = () => {
+const onPost = () => {
   // 空、空行、スペースのみの場合は送信しない
   if (!chatContent.value.trim()) return;
-  const now = new Date().toString()
-  socket.emit("publishEvent", userName.value, chatContent.value, "chat", now)
+  const created_at = new Date().toISOString()
+  const newChat = {
+    user_id: currentUser.rowid,
+    content: chatContent.value,
+    type: 'chat',
+    created_at: created_at,
+  }
+  socket.emit("postEvent", newChat)
 
   // 入力欄を初期化
   chatContent.value = ""
@@ -128,13 +136,13 @@ const onDelete = (chatId) => {
 
 // 退室者をサーバに送信する
 const onExit = () => {
-  socket.emit("exitEvent", userName.value, takeTime())
+  socket.emit("exitEvent", currentUser.name, takeTime())
 }
 
 // メモを画面上に表示する
 const onMemo = () => {
   // メモの追加
-  addChat(userName.value, chatContent.value, "memo", takeTime())
+  addChat(currentUser.name, chatContent.value, "memo", takeTime())
   // 入力欄を初期化
   chatContent.value = ""
 }
@@ -150,10 +158,6 @@ const onPause = () => {
 // #endregion
 
 // #region socket event handler
-// サーバから受信した入室メッセージ画面上に表示する
-const onReceiveEnter = (enteredUserName) => {
-  addChat(enteredUserName, "", "enteredLog", takeTime())
-}
 
 // サーバから受信した退室者を受け取り画面上に退室メッセージを表示する
 const onReceiveExit = (leftUserName, time) => {
@@ -162,7 +166,7 @@ const onReceiveExit = (leftUserName, time) => {
 
 // サーバから受信した投稿メッセージを画面上に表示する
 
-const onReceivePublish = (id, userId, content, type, createdAt) => {
+const onReceivePost = (newChat) => {
   // if (!paused.value) {
   //   if(address==""){
   //     addChat(nameValue, contentValue, "chat", time)
@@ -174,13 +178,6 @@ const onReceivePublish = (id, userId, content, type, createdAt) => {
   // } else {
   //   console.log("受信を一時停止しています")
   // }
-  const newChat = {
-    id: id,
-    user_id: userId,
-    content: content,
-    type: type,
-    created_at: createdAt
-  }
   chatList.value.push(newChat)
 }
 
@@ -194,19 +191,15 @@ const onReceiveDelete = (chatObj) => {
 // #region local methods
 // イベント登録をまとめる
 const registerSocketEvent = () => {
-  // 入室イベントを受け取ったら実行
-  socket.on("enterEvent", (enteredUserName, allChats) => {
-    onReceiveEnter(enteredUserName, allChats);
-  })
 
   // 退室イベントを受け取ったら実行
-  socket.on("exitEvent", (leftUserName, time) => {
-    onReceiveExit(leftUserName, time)
-  })
+  // socket.on("exitEvent", (leftUserName, time) => {
+  //   onReceiveExit(leftUserName, time)
+  // })
 
   // 投稿イベントを受け取ったら実行
-  socket.on("publishEvent", (id, userId, content, type, createdAt) => {
-    onReceivePublish(id, userId, content, type, createdAt)
+  socket.on("postEvent", (newChat) => {
+    onReceivePost(newChat)
   })
 
   // 削除イベントを受け取ったら実行
@@ -217,7 +210,7 @@ const registerSocketEvent = () => {
 
 // 削除ボタンをつけるか否か
 const isDeletable = (chat) => {
-  const hasAuth = chat.user === userName.value;
+  const hasAuth = chat.user === currentUser.name;
   const isValidType = chat.type === "chat" || chat.type === "memo";
   return hasAuth && isValidType;
 };
@@ -229,11 +222,11 @@ const isDeletable = (chat) => {
   <div class="mx-auto my-5 px-4">
     <h1 class="text-h3 font-weight-medium">Vue.js Chat チャットルーム</h1>
     <div class="mt-10">
-      <p>ログインユーザ：{{ userName }}さん</p>
-      <textarea variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area" v-model="chatContent" @keyup.enter="onPublish"></textarea>
+      <p>ログインユーザ：{{ currentUser.name }}さん</p>
+      <textarea variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area" v-model="chatContent" @keyup.enter="onPost"></textarea>
       <textarea variant="outlined" placeholder="相手のユーザーネームを入力" rows="1" class="area" v-model="address"></textarea>
       <div class="mt-5">
-        <button class="button-normal" @click="onPublish">投稿</button>
+        <button class="button-normal" @click="onPost">投稿</button>
         <button class="button-normal util-ml-8px" @click="onMemo">メモ</button>
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">

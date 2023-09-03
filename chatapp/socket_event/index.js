@@ -25,6 +25,7 @@ const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
                          )`
 
 const GET_ALL_CHAT_SQL = `SELECT *, ROWID FROM chat ORDER BY created_at`
+const GET_ALL_USER_SQL = `SELECT *, ROWID FROM user`
 
 //////////////////////////
 // socketイベント処理
@@ -34,9 +35,11 @@ export default (io, socket) => {
     db.serialize(() => {
       db.run(CREATE_USER_SQL)
       db.run("INSERT INTO user(name, email) VALUES(?, ?)", name, email)
+      db.get("SELECT *, ROWID FROM user WHERE email = ?", [email], (err, row) => {
+        // ログインしたユーザー情報をenterEventへ返す
+      io.sockets.emit("enterEvent", row)
+      })
     })
-
-    socket.broadcast.emit("enterEvent", name)
   })
 
   // 全てのチャットを送信する
@@ -50,18 +53,28 @@ export default (io, socket) => {
     })
   })
 
-  // 退室メッセージをクライアントに送信する
-  socket.on("exitEvent", (leftUserName, time) => {
-    socket.broadcast.emit("exitEvent", leftUserName, time)
+  // 全てのユーザーを送信する
+  socket.on("getAllUserEvent", () => {
+    db.run(CREATE_USER_SQL)
+    db.all(GET_ALL_USER_SQL, [], (err, rows) => {
+      if (err) throw err
+      io.sockets.emit("getAllUserEvent", rows)
+    })
   })
 
-  // 投稿メッセージを送信する
-  socket.on("publishEvent", (userId, content, type, createdAt) => {
+  // 退室メッセージをクライアントに送信する
+  // socket.on("exitEvent", (leftUserName, time) => {
+  //   socket.broadcast.emit("exitEvent", leftUserName, time)
+  // })
+
+  // 新しいチャットをdbに追加し、クライアントへ送信する
+  socket.on("postEvent", (newChat) => {
     db.run("INSERT INTO chat(user_id, content, type, created_at ) VALUES(?, ?, ?, ?)",
-           [userId, content, type, createdAt],
+           [newChat.user_id, newChat.content, newChat.type, newChat.created_at],
            function(err) {
-              if (err) return console.log(err.message);
-              io.sockets.emit("publishEvent", this.lastID, userId, content, type, createdAt)
+              if (err) return console.log(err.message)
+              newChat.rowid = this.lastID
+              io.sockets.emit("postEvent", newChat)
            })
 
   })

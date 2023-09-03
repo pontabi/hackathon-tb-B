@@ -4,8 +4,9 @@ import { useRouter } from "vue-router"
 import io from "socket.io-client"
 
 // #region global state
-const userName = inject("userName")
+const currentUser = inject("currentUser")
 const chatList = inject("chatList")
+const userList = inject("userList")
 // #endregion
 
 // #region local variable
@@ -22,26 +23,39 @@ const inputUserEmail = ref("")
 // 入室メッセージをクライアントに送信する
 const onEnter = () => {
   // ユーザー名が入力されているかチェック
-  if (!inputUserName.value) return;
+  if (!inputUserName.value && !inputUserEmail.value) return
 
-  // 入室メッセージを送信
+  // 入室イベントを受け取った時の処理
+  socket.on("enterEvent", (enteredUser) => {
+    currentUser.rowid = enteredUser.rowid
+    currentUser.name = enteredUser.name
+    currentUser.email = enteredUser.email
+    socket.off("enterEvent")
+    // getAllUserEvetを送信
+    socket.emit("getAllUserEvent")
+  })
+  // 入室イベントを送信
   socket.emit("enterEvent", inputUserName.value, inputUserEmail.value)
 
   // getAllChatEventを受け取ったときの処理
   socket.on("getAllChatEvent", (allChats) => {
     chatList.value = allChats
+    socket.off("getAllChatEvent")
   })
-  // db上の全てのチャットを取得するためのイベントを送信
+  // getAllChatEvetを送信
   socket.emit("getAllChatEvent")
 
-
-  // 全体で使用するnameに入力されたユーザー名を格納
-  userName.value = inputUserName.value
+  // getAllUserEventを受け取ったときの処理
+  socket.on("getAllUserEvent", (allUsers) => {
+    userList.value = allUsers
+    socket.off("getAllUserEvent")
+  })
 
   // チャット画面へ遷移
   router.push({ name: "chat" })
 }
 
+//////////////////////////////////
 // 開発用：テーブル削除ハンドラー
 const onDropUserTable = () => {
   socket.emit("dropUserTableEvent")

@@ -2,12 +2,14 @@
 import { provide, reactive, ref } from "vue"
 
 // #region reactive state
-const userName = ref("")
-let chatList = ref([])
+const currentUser = reactive({})
+const userList = ref([])
+const chatList = ref([])
 // #endregion
 
 // #region global variable
-provide("userName", userName)
+provide("currentUser", currentUser)
+provide("userList", userList)
 provide("chatList", chatList)
 // #endregion
 </script>
