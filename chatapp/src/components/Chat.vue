@@ -1,6 +1,7 @@
 <script setup>
 import { inject, ref, reactive, onMounted, computed, watch } from "vue"
 import io from "socket.io-client"
+import { useRouter } from "vue-router";
 
 
 // #region global state
@@ -11,6 +12,7 @@ const userList = inject("userList")
 
 // #region local variable
 const socket = io()
+const router = useRouter()
 // #endregion
 
 // #region reactive variable
@@ -53,18 +55,17 @@ const takeTime = ()=>{
 const getFullText = (chat) => {
   try {
     const user = userList.value.find(el => el.rowid === chat.user_id)
-    console.log(user.name);
     switch (chat.type) {
       case "chat":
         return `${user.name}さん：${chat.content}：${chat.created_at}`
       case "memo":
-        return `${chat.user_id}さんのメモ：${chat.content}：${chat.created_at}`
+        return `${user.name}さんのメモ：${chat.content}：${chat.created_at}`
       case "enteredLog":
-        return `${chat.user_id}さんが入室しました：${chat.created_at}`
+        return `${user.name}さんが入室しました：${chat.created_at}`
       case "leftLog":
-        return `${chat.user_id}さんが退出しました：${chat.created_at}`
+        return `${user.name}さんが退出しました：${chat.created_at}`
       case "DMReceive":
-        return `${chat.user_id}さんからのDM：${chat.content}：${chat.created_at}`
+        return `${user.name}さんからのDM：${chat.content}：${chat.created_at}`
       case "DMSend":
         return `自分で送ったDM：${chat.content}：${chat.created_at}`
       default:
@@ -126,7 +127,17 @@ const onDelete = (chatId) => {
 
 // 退室者をサーバに送信する
 const onExit = () => {
-  socket.emit("exitEvent", currentUser.name, takeTime())
+  const created_at = new Date().toISOString()
+  const newChat = {
+    user_id: currentUser.rowid,
+    content: chatContent.value,
+    type: 'leftLog',
+    created_at: created_at,
+  }
+  socket.emit("postEvent", newChat)
+
+  // リロードを挟まずsocketを再利用できるよう、接続を切る
+  socket.disconnect()
 }
 
 // メモを画面上に表示する
@@ -207,6 +218,7 @@ const registerSocketEvent = () => {
     onReceiveDelete(chatId)
   })
 }
+// #endregion
 
 // 削除ボタンをつけるか否か
 const isDeletable = (chat) => {
@@ -215,7 +227,6 @@ const isDeletable = (chat) => {
   return hasAuth && isValidType;
 };
 
-// #endregion
 </script>
 
 <template>

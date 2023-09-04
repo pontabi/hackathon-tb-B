@@ -2,8 +2,11 @@
 import { provide, reactive, ref } from "vue"
 
 // #region reactive state
+// ログインしているユーザー
 const currentUser = reactive({})
+// db上の全ユーザー
 const userList = ref([])
+// db上の全チャット
 const chatList = ref([])
 // #endregion
 

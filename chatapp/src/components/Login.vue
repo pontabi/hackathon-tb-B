@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref } from "vue"
+import { inject, onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
 import io from "socket.io-client"
 
@@ -19,43 +19,66 @@ const inputUserName = ref("")
 const inputUserEmail = ref("")
 // #endregion
 
+// #region lifecycle
+onMounted(() => {
+  registerSocketEvent()
+})
+// #endregion
+
 // #region browser event handler
 // 入室メッセージをクライアントに送信する
 const onEnter = () => {
-  // ユーザー名が入力されているかチェック
+  // ユーザー名とEmailが入力されているかチェック
   if (!inputUserName.value && !inputUserEmail.value) return
 
-  // 入室イベントを受け取った時の処理
+  // 入室イベントを送信
+  socket.emit("loginEvent", inputUserName.value, inputUserEmail.value)
+
+  // チャット画面へ遷移
+  router.push({ name: "chat" })
+}
+// #endregion
+
+// #region local methods
+// イベント登録をまとめる
+const registerSocketEvent = () => {
+    // 入室イベントを受け取った時の処理
   socket.on("loginEvent", (enteredUser) => {
     currentUser.rowid = enteredUser.rowid
     currentUser.name = enteredUser.name
     currentUser.email = enteredUser.email
     socket.off("loginEvent")
+
     // getAllUserEvetを送信
     socket.emit("getAllUserEvent")
+    // getAllChatEvetを送信
+    socket.emit("getAllChatEvent")
+    // 入室ログをdbに追加
+    const created_at = new Date().toISOString()
+    const newChat = {
+      user_id: currentUser.rowid,
+      content: "",
+      type: 'enteredLog',
+      created_at: created_at,
+    }
+    socket.emit("postEvent", newChat)
   })
-  // 入室イベントを送信
-  socket.emit("loginEvent", inputUserName.value, inputUserEmail.value)
 
   // getAllChatEventを受け取ったときの処理
   socket.on("getAllChatEvent", (allChats) => {
     chatList.value = allChats
     socket.off("getAllChatEvent")
   })
-  // getAllChatEvetを送信
-  socket.emit("getAllChatEvent")
 
   // getAllUserEventを受け取ったときの処理
   socket.on("getAllUserEvent", (allUsers) => {
     userList.value = allUsers
     socket.off("getAllUserEvent")
   })
-
-  // チャット画面へ遷移
-  router.push({ name: "chat" })
 }
+// #endregion
 
-//////////////////////////////////
+// #region delete table handler for dev
 // 開発用：テーブル削除ハンドラー
 const onDropUserTable = () => {
   socket.emit("dropUserTableEvent")
