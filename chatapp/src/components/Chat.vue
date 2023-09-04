@@ -130,7 +130,7 @@ const onDelete = (chatId) => {
 }
 
 // 退室者をサーバに送信する
-const onExit = () => {
+const onExit = async() => {
   const created_at = new Date().toISOString()
   const newChat = {
     user_id: currentUser.rowid,
@@ -139,9 +139,7 @@ const onExit = () => {
     created_at: created_at,
   }
   socket.emit("postEvent", newChat)
-
-  // リロードを挟まずsocketを再利用できるよう、接続を切る
-  socket.disconnect()
+  socket.removeAllListeners()
 }
 
 // メモを画面上に表示する

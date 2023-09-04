@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps } from 'vue'
 import { inject } from 'vue'
 
 const props = defineProps(['chat'])
@@ -48,7 +47,7 @@ const fTime = new Date(props.chat.created_at)
 
   <div v-if="chat.type === 'leftLog'">
     <div class="">
-      {{ sender.name }}さんが入室しました
+      {{ sender.name }}さんが退出しました
     </div>
     <div class="text-right">
       {{ fTime }}
