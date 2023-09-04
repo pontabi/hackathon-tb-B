@@ -58,7 +58,8 @@ const getFullText = (chat) => {
       case "chat":
         return `${user.name}さん：${chat.content}：${chat.created_at}`
       case "memo":
-        return `${chat.user_id}さんのメモ：${chat.content}：${chat.created_at}`
+        if (currentUser.name !== user.name) return undefined
+        return `${user.name}さんのメモ：${chat.content}：${chat.created_at}`
       case "enteredLog":
         return `${chat.user_id}さんが入室しました：${chat.created_at}`
       case "leftLog":
@@ -131,10 +132,20 @@ const onExit = () => {
 
 // メモを画面上に表示する
 const onMemo = () => {
-  // メモの追加
-  addChat(currentUser.name, chatContent.value, "memo", takeTime())
+  console.log(currentUser.name)
+  // 空、空行、スペースのみの場合は送信しない
+  if (!chatContent.value.trim()) return;
+  const created_at = new Date().toISOString()
+  const newChat = {
+    user_id: currentUser.rowid,
+    content: chatContent.value,
+    type: 'memo',
+    created_at: created_at,
+  }
+  socket.emit("memoEvent", newChat)
   // 入力欄を初期化
   chatContent.value = ""
+  address.value = ""
 }
 
 
@@ -176,6 +187,10 @@ const onReceivePost = (newChat) => {
   chatList.value.push(newChat)
 }
 
+const onReceiveMemo = (newChat) => {
+  chatList.value.push(newChat)
+}
+
 // サーバから受信した投稿メッセージを削除する
 const onReceiveDelete = (chatId) => {
   const removeIdx = chatList.value.findIndex(el => el.rowid === chatId)
@@ -196,6 +211,12 @@ const registerSocketEvent = () => {
   // socket.on("exitEvent", (leftUserName, time) => {
   //   onReceiveExit(leftUserName, time)
   // })
+
+  // メモイベントを受け取ったら実行
+  socket.on("memoEvent", (newChat) => {
+    console.log(newChat.user_id + "さんのメモだよ2")
+    onReceiveMemo(newChat)
+  })
 
   // 投稿イベントを受け取ったら実行
   socket.on("postEvent", (newChat) => {

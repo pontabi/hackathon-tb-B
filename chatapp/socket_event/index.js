@@ -82,6 +82,17 @@ export default (io, socket) => {
 
   })
 
+
+  socket.on("memoEvent", (newChat) => {
+    db.run("INSERT INTO chat(user_id, content, type, created_at ) VALUES(?, ?, ?, ?)",
+           [newChat.user_id, newChat.content, newChat.type, newChat.created_at],
+           function(err) {
+              if (err) return console.log(err.message)
+              newChat.rowid = this.lastID
+              io.sockets.emit("memoEvent", newChat)
+           })
+  })
+
   // 削除する投稿オブジェクトを送信する
   socket.on("deleteEvent", (chatId) => {
     db.run("DELETE FROM chat WHERE rowid = (?)", [chatId], (err) => {
