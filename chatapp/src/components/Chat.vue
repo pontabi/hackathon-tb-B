@@ -2,6 +2,8 @@
 import { inject, ref, reactive, onMounted, computed, watch } from "vue"
 import io from "socket.io-client"
 import { useRouter } from "vue-router";
+import ChatItem from "./ChatItem.vue";
+
 
 
 // #region global state
@@ -244,8 +246,9 @@ const isDeletable = (chat) => {
         <button type="button" class="button-normal" @click="sortOrderButton">現在: {{ sortOrder ? "降順" : "昇順" }}</button>
         <ul>
           <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.rowid">
-            <p>{{ getFullText(chat) }}</p>
-            <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button>
+            <!-- <p>{{ getFullText(chat) }}</p>
+            <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button> -->
+            <ChatItem :chat="chat" />
           </li>
         </ul>
       </div>
@@ -258,6 +261,7 @@ const isDeletable = (chat) => {
 </template>
 
 <style scoped>
+
 .link {
   text-decoration: none;
 }

@@ -96,17 +96,17 @@ const onDropChatTable = () => {
         <h1 class="text-h3 font-weight-medium my-5">Vue.js Chat サンプル</h1>
         <div class="mt-10">
           <p>ユーザー名</p>
-          <input
+          <v-text-field
             v-model="inputUserName"
             @keydown.enter="onEnter"
-            class="user-name-text form-control w-100"
+            class=""
             type="text"
             placeholder="name"
           />
-          <input
+          <v-text-field
             v-model="inputUserEmail"
             @keydown.enter="onEnter"
-            class="user-name-text form-control w-100"
+            class=""
             type="text"
             placeholder="email"
           />
