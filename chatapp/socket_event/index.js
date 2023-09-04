@@ -1,5 +1,6 @@
 import sqlite3 from "sqlite3"
 import path from "node:path"
+import { log } from "node:console"
 
 //////////////////////////
 // データベースに接続
@@ -30,14 +31,16 @@ const GET_ALL_USER_SQL = `SELECT *, ROWID FROM user`
 //////////////////////////
 // socketイベント処理
 export default (io, socket) => {
-  // 入室処理
-  socket.on("enterEvent", (name, email) => {
+  // login処理
+  socket.on("loginEvent", (name, email) => {
     db.serialize(() => {
       db.run(CREATE_USER_SQL)
       db.run("INSERT INTO user(name, email) VALUES(?, ?)", name, email)
       db.get("SELECT *, ROWID FROM user WHERE email = ?", [email], (err, row) => {
-        // ログインしたユーザー情報をenterEventへ返す
-      io.sockets.emit("enterEvent", row)
+        // ログインしたユーザー情報をloginEventへ返す
+        io.sockets.emit("loginEvent", row)
+        // ログインしたユーザー情報を他のクライアントにも送信
+        socket.broadcast.emit("enterEvent", row)
       })
     })
   })
@@ -80,8 +83,15 @@ export default (io, socket) => {
   })
 
   // 削除する投稿オブジェクトを送信する
-  socket.on("deleteEvent", (chatObj) => {
-    io.sockets.emit("deleteEvent", chatObj)
+  socket.on("deleteEvent", (chatId) => {
+    db.run("DELETE FROM chat WHERE rowid = (?)", [chatId], (err) => {
+      if(err) {
+        console.log(err);
+      }else {
+        console.log(`Successfuly deleted row${chatId}`);
+      }
+    })
+    io.sockets.emit("deleteEvent", chatId)
   })
 
   // 開発用のuserテーブル削除イベント

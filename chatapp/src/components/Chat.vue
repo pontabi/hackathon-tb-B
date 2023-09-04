@@ -118,20 +118,10 @@ const onPost = () => {
 
 // 投稿削除イベントをサーバーに送信する
 const onDelete = (chatId) => {
-  const chatObj = chatList.find(el => el.id === chatId)
-  // chatが存在しない場合、早期リターン
-  if (!chatObj) {
-    alert("The chat is not exist")
-    return
-  }
   // メモの時は、サーバーには送信せず、削除を反映
-  if (chatObj.type === "memo") {
-    const removeIdx = chatList.findIndex(el => el.id === chatObj.id)
-    chatList.splice(removeIdx, 1)
-    return
-  }
+  // future implement
 
-  socket.emit("deleteEvent", chatObj)
+  socket.emit("deleteEvent", chatId)
 }
 
 // 退室者をサーバに送信する
@@ -159,6 +149,11 @@ const onPause = () => {
 
 // #region socket event handler
 
+// サーバから受信した入室者を受け取りuserListへ追加
+const onReceiveEnter = (newUser) => {
+  userList.value.push(newUser)
+}
+
 // サーバから受信した退室者を受け取り画面上に退室メッセージを表示する
 const onReceiveExit = (leftUserName, time) => {
   addChat(leftUserName, "", "leftLog", time)
@@ -182,15 +177,20 @@ const onReceivePost = (newChat) => {
 }
 
 // サーバから受信した投稿メッセージを削除する
-const onReceiveDelete = (chatObj) => {
-  const removeIdx = chatList.findIndex(el => el.id === chatObj.id)
-  chatList.splice(removeIdx, 1)
+const onReceiveDelete = (chatId) => {
+  const removeIdx = chatList.value.findIndex(el => el.rowid === chatId)
+  chatList.value.splice(removeIdx, 1)
 }
 // #endregion
 
 // #region local methods
 // イベント登録をまとめる
 const registerSocketEvent = () => {
+
+  // 入室イベントを受け取ったら実行
+  socket.on("enterEvent", (newUser) => {
+    onReceiveEnter(newUser)
+  })
 
   // 退室イベントを受け取ったら実行
   // socket.on("exitEvent", (leftUserName, time) => {
@@ -203,14 +203,14 @@ const registerSocketEvent = () => {
   })
 
   // 削除イベントを受け取ったら実行
-  socket.on("deleteEvent", (chatObj) => {
-    onReceiveDelete(chatObj)
+  socket.on("deleteEvent", (chatId) => {
+    onReceiveDelete(chatId)
   })
 }
 
 // 削除ボタンをつけるか否か
 const isDeletable = (chat) => {
-  const hasAuth = chat.user === currentUser.name;
+  const hasAuth = chat.user_id === currentUser.rowid;
   const isValidType = chat.type === "chat" || chat.type === "memo";
   return hasAuth && isValidType;
 };
@@ -232,9 +232,9 @@ const isDeletable = (chat) => {
       <div class="mt-5" v-if="chatList.length !== 0">
         <button type="button" class="button-normal" @click="sortOrderButton">現在: {{ sortOrder ? "降順" : "昇順" }}</button>
         <ul>
-          <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.id">
+          <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.rowid">
             <p>{{ getFullText(chat) }}</p>
-            <button v-if="isDeletable(chat)" @click="onDelete(chat.id)" class="button-normal">Delete</button>
+            <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button>
           </li>
         </ul>
       </div>

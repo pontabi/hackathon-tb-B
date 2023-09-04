@@ -26,16 +26,16 @@ const onEnter = () => {
   if (!inputUserName.value && !inputUserEmail.value) return
 
   // 入室イベントを受け取った時の処理
-  socket.on("enterEvent", (enteredUser) => {
+  socket.on("loginEvent", (enteredUser) => {
     currentUser.rowid = enteredUser.rowid
     currentUser.name = enteredUser.name
     currentUser.email = enteredUser.email
-    socket.off("enterEvent")
+    socket.off("loginEvent")
     // getAllUserEvetを送信
     socket.emit("getAllUserEvent")
   })
   // 入室イベントを送信
-  socket.emit("enterEvent", inputUserName.value, inputUserEmail.value)
+  socket.emit("loginEvent", inputUserName.value, inputUserEmail.value)
 
   // getAllChatEventを受け取ったときの処理
   socket.on("getAllChatEvent", (allChats) => {
