@@ -1,6 +1,9 @@
 <script setup>
 import { inject, ref, reactive, onMounted, computed, watch } from "vue"
 import io from "socket.io-client"
+import { useRouter } from "vue-router";
+import ChatItem from "./ChatItem.vue";
+
 
 
 // #region global state
@@ -11,6 +14,7 @@ const userList = inject("userList")
 
 // #region local variable
 const socket = io()
+const router = useRouter()
 // #endregion
 
 // #region reactive variable
@@ -53,7 +57,6 @@ const takeTime = ()=>{
 const getFullText = (chat) => {
   try {
     const user = userList.value.find(el => el.rowid === chat.user_id)
-    console.log(user.name);
     switch (chat.type) {
       case "chat":
         return `${user.name}さん：${chat.content}：${chat.created_at}`
@@ -61,11 +64,11 @@ const getFullText = (chat) => {
         if (currentUser.name !== user.name) return undefined
         return `${user.name}さんのメモ：${chat.content}：${chat.created_at}`
       case "enteredLog":
-        return `${chat.user_id}さんが入室しました：${chat.created_at}`
+        return `${user.name}さんが入室しました：${chat.created_at}`
       case "leftLog":
-        return `${chat.user_id}さんが退出しました：${chat.created_at}`
+        return `${user.name}さんが退出しました：${chat.created_at}`
       case "DMReceive":
-        return `${chat.user_id}さんからのDM：${chat.content}：${chat.created_at}`
+        return `${user.name}さんからのDM：${chat.content}：${chat.created_at}`
       case "DMSend":
         return `自分で送ったDM：${chat.content}：${chat.created_at}`
       default:
@@ -127,7 +130,17 @@ const onDelete = (chatId) => {
 
 // 退室者をサーバに送信する
 const onExit = () => {
-  socket.emit("exitEvent", currentUser.name, takeTime())
+  const created_at = new Date().toISOString()
+  const newChat = {
+    user_id: currentUser.rowid,
+    content: chatContent.value,
+    type: 'leftLog',
+    created_at: created_at,
+  }
+  socket.emit("postEvent", newChat)
+
+  // リロードを挟まずsocketを再利用できるよう、接続を切る
+  socket.disconnect()
 }
 
 // メモを画面上に表示する
@@ -228,6 +241,7 @@ const registerSocketEvent = () => {
     onReceiveDelete(chatId)
   })
 }
+// #endregion
 
 // 削除ボタンをつけるか否か
 const isDeletable = (chat) => {
@@ -236,7 +250,6 @@ const isDeletable = (chat) => {
   return hasAuth && isValidType;
 };
 
-// #endregion
 </script>
 
 <template>
@@ -254,8 +267,9 @@ const isDeletable = (chat) => {
         <button type="button" class="button-normal" @click="sortOrderButton">現在: {{ sortOrder ? "降順" : "昇順" }}</button>
         <ul>
           <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.rowid">
-            <p>{{ getFullText(chat) }}</p>
-            <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button>
+            <!-- <p>{{ getFullText(chat) }}</p>
+            <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button> -->
+            <ChatItem :chat="chat" />
           </li>
         </ul>
       </div>
@@ -268,6 +282,7 @@ const isDeletable = (chat) => {
 </template>
 
 <style scoped>
+
 .link {
   text-decoration: none;
 }
