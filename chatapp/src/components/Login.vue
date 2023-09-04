@@ -42,7 +42,7 @@ const onEnter = () => {
 // #region local methods
 // イベント登録をまとめる
 const registerSocketEvent = () => {
-    // 入室イベントを受け取った時の処理
+  // 入室イベントを受け取った時の処理
   socket.on("loginEvent", (enteredUser) => {
     currentUser.rowid = enteredUser.rowid
     currentUser.name = enteredUser.name
@@ -90,39 +90,28 @@ const onDropChatTable = () => {
 </script>
 
 <template>
-  <form>
-    <div class="container d-flex align-items-center">
-      <div class="mx-auto my-5 px-4 border rounded-3">
-        <h1 class="text-h3 font-weight-medium my-5">Vue.js Chat サンプル</h1>
-        <div class="mt-10">
-          <p>ユーザー名</p>
-          <v-text-field
-            v-model="inputUserName"
-            @keydown.enter="onEnter"
-            class=""
-            type="text"
-            placeholder="name"
-          />
-          <v-text-field
-            v-model="inputUserEmail"
-            @keydown.enter="onEnter"
-            class=""
-            type="text"
-            placeholder="email"
-          />
+    <v-app class="fullpage bg-blue-lighten-5">
+      <div class="login-page bg-white">
+        <div class="form text-center pa-10 elevation-10">
+          <form class="login-form">
+            <h1 class="mb-10">Vue.js Chat</h1>
+            <div class="">
+              <v-text-field v-model="inputUserName" @keydown.enter="onEnter" class="" type="text" placeholder="name" />
+              <v-text-field v-model="inputUserEmail" @keydown.enter="onEnter" class="" type="text" placeholder="email" />
+            </div>
+            <v-btn type="button" @click="onEnter" class="w-100">入室する</v-btn>
+          </form>
         </div>
-        <button type="button" @click="onEnter" class="btn btn-primary w-100 mb-5">入室する</button>
       </div>
-    </div>
-  </form>
+    </v-app>
+
   <v-btn @click="onDropUserTable" color="red">開発用・Userテーブル削除</v-btn>
   <v-btn @click="onDropChatTable" color="red">開発用・Chatテーブル削除</v-btn>
 </template>
 
 <style scoped>
-.user-name-text {
-  width: 200px;
-  border: 1px solid #888;
-  margin-bottom: 16px;
+.login-page {
+  width: 360px;
+  margin: 8% auto 0;
 }
 </style>

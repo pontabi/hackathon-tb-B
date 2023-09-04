@@ -25,7 +25,7 @@ const fTime = new Date(props.chat.created_at)
     </div>
   </div>
 
-  <div v-if="chat.type === 'memo'">
+  <div v-else-if="chat.type === 'memo'">
     <div class="">
       {{ sender.name }}さんのメモ
     </div>
@@ -37,7 +37,7 @@ const fTime = new Date(props.chat.created_at)
     </div>
   </div>
 
-  <div v-if="chat.type === 'enteredLog'">
+  <div v-else-if="chat.type === 'enteredLog'">
     <div class="">
       {{ sender.name }}さんが入室しました
     </div>
@@ -46,7 +46,7 @@ const fTime = new Date(props.chat.created_at)
     </div>
   </div>
 
-  <div v-if="chat.type === 'leftLog'">
+  <div v-else-if="chat.type === 'leftLog'">
     <div class="">
       {{ sender.name }}さんが入室しました
     </div>
