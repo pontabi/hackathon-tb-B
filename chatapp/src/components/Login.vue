@@ -115,7 +115,9 @@ const onDropChatTable = () => {
       </div>
     </div>
   </form>
+  <v-btn href="/db-user/">開発用・Userテーブル参照</v-btn>
   <v-btn @click="onDropUserTable" color="red">開発用・Userテーブル削除</v-btn>
+  <v-btn href="/db-chat/">開発用・Chatテーブル参照</v-btn>
   <v-btn @click="onDropChatTable" color="red">開発用・Chatテーブル削除</v-btn>
 </template>
 

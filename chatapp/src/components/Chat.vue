@@ -40,6 +40,7 @@ const sortOrderButton = () => {
 
 // sortOrderがfalseなら昇順、trueなら降順
 const sortedChatList = computed(() => {
+  console.log(chatList.value)
   if (sortOrder.value) {
     return chatList.value.slice().reverse();
   } else {
