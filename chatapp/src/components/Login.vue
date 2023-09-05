@@ -92,7 +92,7 @@ const onDropChatTable = () => {
 <template>
   <form>
     <div class="container d-flex align-items-center">
-      <div class="mx-auto my-5 px-4 border rounded-3">
+      <div class="mx-auto my-5 border rounded-3 p-5">
         <h1 class="text-h3 font-weight-medium my-5">Vue.js Chat サンプル</h1>
         <div class="mt-10">
           <p>ユーザー名</p>
@@ -101,7 +101,7 @@ const onDropChatTable = () => {
             @keydown.enter="onEnter"
             class=""
             type="text"
-            placeholder="name"
+            placeholder="username"
           />
           <v-text-field
             v-model="inputUserEmail"
@@ -111,7 +111,8 @@ const onDropChatTable = () => {
             placeholder="email"
           />
         </div>
-        <button type="button" @click="onEnter" class="btn btn-primary w-100 mb-5">入室する</button>
+        <button type="button" @click="onEnter" class="btn btn-primary w-100">入室する</button>
+        <router-link to="/signup" class="signup-link">Signup</router-link>
       </div>
     </div>
   </form>
@@ -126,5 +127,11 @@ const onDropChatTable = () => {
   width: 200px;
   border: 1px solid #888;
   margin-bottom: 16px;
+}
+
+.signup-link {
+  text-decoration: none;
+  display: block;
+  text-align: right;
 }
 </style>

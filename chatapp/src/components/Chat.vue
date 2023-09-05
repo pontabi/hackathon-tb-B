@@ -130,7 +130,7 @@ const onDelete = (chatId) => {
 }
 
 // 退室者をサーバに送信する
-const onExit = async() => {
+const onExit = () => {
   const created_at = new Date().toISOString()
   const newChat = {
     user_id: currentUser.rowid,
