@@ -226,7 +226,6 @@ const registerSocketEvent = () => {
 
   // メモイベントを受け取ったら実行
   socket.on("memoEvent", (newChat) => {
-    console.log(newChat.user_id + "さんのメモだよ2")
     onReceiveMemo(newChat)
   })
 
