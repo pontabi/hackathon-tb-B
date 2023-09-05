@@ -1,5 +1,4 @@
 <script setup>
-import { defineProps } from 'vue'
 import { inject } from 'vue'
 
 const props = defineProps(['chat'])
@@ -10,6 +9,8 @@ const sender = userList.value.find(el => el.rowid === props.chat.user_id)
 
 const fTime = new Date(props.chat.created_at)
                   .toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+const currentUser = inject('currentUser')
 </script>
 
 <template>
@@ -25,7 +26,7 @@ const fTime = new Date(props.chat.created_at)
     </div>
   </div>
 
-  <div v-else-if="chat.type === 'memo'">
+  <div v-if="chat.type === 'memo' && currentUser.name === sender.name">
     <div class="">
       {{ sender.name }}さんのメモ
     </div>
@@ -48,7 +49,7 @@ const fTime = new Date(props.chat.created_at)
 
   <div v-else-if="chat.type === 'leftLog'">
     <div class="">
-      {{ sender.name }}さんが入室しました
+      {{ sender.name }}さんが退出しました
     </div>
     <div class="text-right">
       {{ fTime }}

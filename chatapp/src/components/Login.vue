@@ -96,16 +96,29 @@ const onDropChatTable = () => {
           <form class="login-form">
             <h1 class="mb-10">Vue.js Chat</h1>
             <div class="">
-              <v-text-field v-model="inputUserName" label="name" @keydown.enter="onEnter" class="" type="text" />
-              <v-text-field v-model="inputUserEmail" label="email" @keydown.enter="onEnter" class="" type="text" />
+              <v-text-field
+                v-model="inputUserName"
+                label="name"
+                @keydown.enter="onEnter"
+                class=""
+                type="text" />
+              <v-text-field
+                v-model="inputUserEmail"
+                label="email"
+                @keydown.enter="onEnter"
+                class=""
+                type="text" />
             </div>
             <v-btn type="button" @click="onEnter" class="w-100">入室する</v-btn>
+            <router-link to="/signup" class="signup-link">Signup</router-link>
           </form>
         </div>
       </div>
     </v-app>
 
+  <v-btn href="/db-user/">開発用・Userテーブル参照</v-btn>
   <v-btn @click="onDropUserTable" color="red">開発用・Userテーブル削除</v-btn>
+  <v-btn href="/db-chat/">開発用・Chatテーブル参照</v-btn>
   <v-btn @click="onDropChatTable" color="red">開発用・Chatテーブル削除</v-btn>
 </template>
 
@@ -113,5 +126,11 @@ const onDropChatTable = () => {
 .login-page {
   width: 400px;
   margin: 8% auto 0;
+}
+
+.signup-link {
+  text-decoration: none;
+  display: block;
+  text-align: right;
 }
 </style>
