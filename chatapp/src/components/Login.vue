@@ -111,7 +111,7 @@ const onDropChatTable = () => {
 
 <style scoped>
 .login-page {
-  width: 360px;
+  width: 400px;
   margin: 8% auto 0;
 }
 </style>
