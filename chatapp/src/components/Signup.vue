@@ -4,21 +4,80 @@ import { useRouter } from "vue-router"
 import io from "socket.io-client"
 import { sha256 } from 'js-sha256'
 import { useField, useForm } from 'vee-validate'
+import BaseDialog from "./Base/BaseDialog.vue"
+
+// #region global state
+const currentUser = inject("currentUser")
+const chatList = inject("chatList")
+const userList = inject("userList")
+// #endregion
 
 // #region local variable
 const router = useRouter()
 const socket = io()
+const dialog = ref(false)
 // #endregion
 
 // #region lifecycle
 onMounted(() => {
-  // signupイベントを受け取ったら実行
-  socket.on("signupEvent", (newUser) => {
-
-  })
+  registerSocketEvent()
 })
 // #endregion
 
+// #region local methods
+// イベント登録をまとめる
+const registerSocketEvent = () => {
+  // signupFailedイベントを受け取ったら実行
+  socket.on("signupFailedEvent", (user) => {
+    // signup失敗dialogを表示
+    dialog.value = true
+  })
+
+  // signupSuccessEventイベントを受け取ったら実行
+  socket.on("signupSuccessEvent", (user) => {
+    socket.emit("loginEvent", user.name, user.password)
+    router.push({ name: "chat" })
+  })
+  // 入室イベントを受け取った時の処理
+  socket.on("loginSuccessEvent", (enteredUser) => {
+    console.log(enteredUser);
+    currentUser.rowid = enteredUser.rowid
+    currentUser.name = enteredUser.name
+    currentUser.email = enteredUser.email
+
+    // getAllUserEvetを送信
+    socket.emit("getAllUserEvent")
+    // getAllChatEvetを送信
+    socket.emit("getAllChatEvent")
+    // 入室ログをdbに追加
+    const created_at = new Date().toISOString()
+    const newChat = {
+      user_id: currentUser.rowid,
+      content: "",
+      type: 'enteredLog',
+      created_at: created_at,
+    }
+    socket.emit("postEvent", newChat)
+
+    // チャット画面へ遷移
+    router.push({ name: "chat" })
+  })
+
+  socket.on("loginFailedEvent", () => {
+    loginFailed.value = true
+  })
+
+  // getAllChatEventを受け取ったときの処理
+  socket.on("getAllChatEvent", (allChats) => {
+    chatList.value = allChats
+  })
+
+  // getAllUserEventを受け取ったときの処理
+  socket.on("getAllUserEvent", (allUsers) => {
+    userList.value = allUsers
+  })
+}
+// #endregion
 
 // #region form handler
 const { handleSubmit, handleReset } = useForm({
@@ -104,7 +163,16 @@ const submit = handleSubmit(values => {
         </v-btn>
       </div>
     </form>
+    <router-link to="/" class="login-link">
+    login
+  </router-link>
   </v-card>
+  <BaseDialog
+    v-if="dialog"
+    v-model="dialog"
+    btnText="閉じる"
+    content="User名かE-mailが既に使用されています。"
+  />
 </template>
 
 <style scoped>
@@ -118,5 +186,10 @@ const submit = handleSubmit(values => {
   margin: auto;
   height: 500px;
   padding: 5rem;
+}
+
+.login-link {
+  text-decoration: none;
+  float: right;
 }
 </style>

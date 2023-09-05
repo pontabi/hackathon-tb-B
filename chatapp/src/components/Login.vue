@@ -2,6 +2,8 @@
 import { inject, onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
 import io from "socket.io-client"
+import { sha256 } from "js-sha256";
+import { VAlert } from "vuetify/lib/components/index.mjs";
 
 // #region global state
 const currentUser = inject("currentUser")
@@ -16,7 +18,8 @@ const socket = io()
 
 // #region reactive variable
 const inputUserName = ref("")
-const inputUserEmail = ref("")
+const inputPassword = ref("")
+const loginFailed = ref(false)
 // #endregion
 
 // #region lifecycle
@@ -29,13 +32,13 @@ onMounted(() => {
 // 入室メッセージをクライアントに送信する
 const onEnter = () => {
   // ユーザー名とEmailが入力されているかチェック
-  if (!inputUserName.value && !inputUserEmail.value) return
+  if (!inputUserName.value && !inputPassword.value) return
 
+  // パスワードをsha256でハッシュ化
+  const password = sha256(inputPassword.value)
   // 入室イベントを送信
-  socket.emit("loginEvent", inputUserName.value, inputUserEmail.value)
+  socket.emit("loginEvent", inputUserName.value, password)
 
-  // チャット画面へ遷移
-  router.push({ name: "chat" })
 }
 // #endregion
 
@@ -43,11 +46,11 @@ const onEnter = () => {
 // イベント登録をまとめる
 const registerSocketEvent = () => {
   // 入室イベントを受け取った時の処理
-  socket.on("loginEvent", (enteredUser) => {
+  socket.on("loginSuccessEvent", (enteredUser) => {
+    console.log(enteredUser);
     currentUser.rowid = enteredUser.rowid
     currentUser.name = enteredUser.name
     currentUser.email = enteredUser.email
-    socket.off("loginEvent")
 
     // getAllUserEvetを送信
     socket.emit("getAllUserEvent")
@@ -62,18 +65,23 @@ const registerSocketEvent = () => {
       created_at: created_at,
     }
     socket.emit("postEvent", newChat)
+
+    // チャット画面へ遷移
+    router.push({ name: "chat" })
+  })
+
+  socket.on("loginFailedEvent", () => {
+    loginFailed.value = true
   })
 
   // getAllChatEventを受け取ったときの処理
   socket.on("getAllChatEvent", (allChats) => {
     chatList.value = allChats
-    socket.off("getAllChatEvent")
   })
 
   // getAllUserEventを受け取ったときの処理
   socket.on("getAllUserEvent", (allUsers) => {
     userList.value = allUsers
-    socket.off("getAllUserEvent")
   })
 }
 // #endregion
@@ -98,19 +106,29 @@ const onDropChatTable = () => {
             <div class="">
               <v-text-field
                 v-model="inputUserName"
-                label="name"
+                label="username or email"
                 @keydown.enter="onEnter"
                 class=""
                 type="text" />
               <v-text-field
-                v-model="inputUserEmail"
-                label="email"
+                v-model="inputPassword"
+                label="password"
                 @keydown.enter="onEnter"
                 class=""
-                type="text" />
+                type="password" />
             </div>
             <v-btn type="button" @click="onEnter" class="w-100">入室する</v-btn>
-            <router-link to="/signup" class="signup-link">Signup</router-link>
+            <v-alert
+              v-if="loginFailed"
+              variant="outlined"
+              type="error"
+              border="start"
+              text="ログイン情報が正しくありません。"
+              class="my-3"
+            ></v-alert>
+            <router-link to="/signup" class="signup-link">
+              Signup
+            </router-link>
           </form>
         </div>
       </div>
@@ -124,13 +142,12 @@ const onDropChatTable = () => {
 
 <style scoped>
 .login-page {
-  width: 400px;
+  width: 500px;
   margin: 8% auto 0;
 }
 
 .signup-link {
   text-decoration: none;
-  display: block;
-  text-align: right;
+  float: right;
 }
 </style>

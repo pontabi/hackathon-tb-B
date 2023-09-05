@@ -12,8 +12,9 @@ const db = new sqlite3.Database(path.join(process.cwd(), "/resources/test.db"), 
 //////////////////////////
 // クエリ
 const CREATE_USER_SQL = `CREATE TABLE IF NOT EXISTS user(
-                            name TEXT NOT NULL,
-                            email TEXT UNIQUE
+                            name TEXT UNIQUE,
+                            email TEXT UNIQUE,
+                            password TEXT NOT NULL
                          )`
 
 const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
@@ -32,17 +33,44 @@ const GET_ALL_USER_SQL = `SELECT *, ROWID FROM user`
 //////////////////////////
 // socketイベント処理
 export default (io, socket) => {
-  // login処理
-  socket.on("loginEvent", (name, email) => {
+  // signup処理
+  socket.on("signupEvent", (newUser) => {
     db.serialize(() => {
       db.run(CREATE_USER_SQL)
-      db.run("INSERT INTO user(name, email) VALUES(?, ?)", name, email)
-      db.get("SELECT *, ROWID FROM user WHERE email = ?", [email], (err, row) => {
-        // ログインしたユーザー情報をloginEventへ返す
-        io.sockets.emit("loginEvent", row)
-        // ログインしたユーザー情報を他のクライアントにも送信
-        socket.broadcast.emit("enterEvent", row)
-      })
+        .get(`SELECT * FROM user WHERE name = ? OR email = ?`, [newUser.name, newUser.email], (err, row) => {
+          // 既にユーザが登録されていた場合
+          if (row) {
+            socket.emit("signupFailedEvent", row)
+          // 新規ユーザーだった場合
+          } else {
+            db.run("INSERT INTO user(name, email, password) VALUES(?, ?, ?)",
+                    [newUser.name, newUser.email, newUser.password],
+                    function(err) {
+                        if (err) return console.log(err.message)
+                        newUser.rowid = this.lastID
+                        socket.emit("signupSuccessEvent", newUser)
+                    })
+          }
+        })
+    })
+  })
+  // login処理
+  socket.on("loginEvent", (uniqueValue, password) => {
+    db.serialize(() => {
+      db.run(CREATE_USER_SQL)
+        .get("SELECT *, ROWID FROM user WHERE (email = ? OR name = ?) AND password = ?",
+         [uniqueValue, uniqueValue, password],
+         (err, row) => {
+            // user名とpasswordが合っていた場合, emailとpasswordが合っていた場合
+            if (row) {
+              // ログインしたユーザー情報をloginEventへ返す
+              socket.emit("loginSuccessEvent", row)
+              // ログインしたユーザー情報を他のクライアントにも送信
+              socket.broadcast.emit("enterEvent", row)
+            } else {
+              socket.emit("loginFailedEvent")
+            }
+          })
     })
   })
 
@@ -52,7 +80,7 @@ export default (io, socket) => {
       db.run(CREATE_CHAT_SQL)
       db.all(GET_ALL_CHAT_SQL, [], (err, rows) => {
         if (err) throw err
-        io.sockets.emit("getAllChatEvent", rows)
+        socket.emit("getAllChatEvent", rows)
       })
     })
   })
@@ -63,7 +91,7 @@ export default (io, socket) => {
       db.run(CREATE_USER_SQL)
       db.all(GET_ALL_USER_SQL, [], (err, rows) => {
         if (err) throw err
-        io.sockets.emit("getAllUserEvent", rows)
+        socket.emit("getAllUserEvent", rows)
       })
     })
   })
