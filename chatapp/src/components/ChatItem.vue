@@ -18,7 +18,7 @@ const currentUser = inject('currentUser')
     <div class="">
       {{ sender.name }}さん
     </div>
-    <v-card class="p-2 ml-4" width="400" color="green">
+    <v-card class="px-4 py-2 ml-4" color="green">
       {{ chat.content }}
     </v-card>
     <div class="text-right">
@@ -30,7 +30,7 @@ const currentUser = inject('currentUser')
     <div class="">
       {{ sender.name }}さんのメモ
     </div>
-    <v-card class="p-2" width="400" color="green">
+    <v-card class="p-2" color="green">
       {{ chat.content }}
     </v-card>
     <div class="text-right">

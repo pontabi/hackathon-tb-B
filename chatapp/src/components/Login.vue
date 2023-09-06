@@ -100,10 +100,18 @@ const onDropChatTable = () => {
 <template>
     <v-app class="fullpage bg-blue-lighten-5">
       <div class="login-page bg-white">
-        <div class="form text-center pa-10 elevation-10">
+        <div class="form text-center pa-sm-10 px-4 py-10 elevation-2">
           <form class="login-form">
             <h1 class="mb-10">Vue.js Chat</h1>
             <div class="">
+              <v-alert
+              v-if="loginFailed"
+              type="error"
+              variant="outlined"
+              border="start"
+              text="ログイン情報が正しくありません。"
+              class=" py-2 mb-6 text-body-2"
+              ></v-alert>
               <v-text-field
                 v-model="inputUserName"
                 label="username or email"
@@ -117,18 +125,9 @@ const onDropChatTable = () => {
                 class=""
                 type="password" />
             </div>
-            <v-btn type="button" @click="onEnter" class="w-100">入室する</v-btn>
-            <v-alert
-              v-if="loginFailed"
-              variant="outlined"
-              type="error"
-              border="start"
-              text="ログイン情報が正しくありません。"
-              class="my-3"
-            ></v-alert>
-            <router-link to="/signup" class="signup-link">
-              Signup
-            </router-link>
+            <v-btn type="button" size="large" @click="onEnter" class="w-100 mb-4" color="blue">入室する</v-btn>
+            <p class="text-caption mb-2">- アカウント登録がまだお済みで無い方は -</p>
+            <v-btn type="button" size="small" href="/signup/" class="w-100">アカウント登録</v-btn>
           </form>
         </div>
       </div>
@@ -142,12 +141,18 @@ const onDropChatTable = () => {
 
 <style scoped>
 .login-page {
-  width: 400px;
+  width: 500px;
   margin: auto;
-  position: absolute;
+  position: absolute; /* 絶対位置指定 */
   top: 50%;
   left: 50%;
   transform: translateY(-60%) translateX(-50%);
+}
+
+@media screen and (max-width: 500px) {
+  .login-page {
+    width: 95%;
+  }
 }
 
 .signup-link {

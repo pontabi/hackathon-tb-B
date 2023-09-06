@@ -124,7 +124,8 @@ const submit = handleSubmit(values => {
 </script>
 
 <template>
-  <v-card class="signup-card">
+  <div class="fullpage bg-blue-lighten-5">
+    <v-card class="signup-card pa-sm-10 px-4 py-10">
     <h1 class="text-center mb-5">ChatApp Signup</h1>
     <form @submit.prevent="submit">
       <v-text-field
@@ -166,6 +167,8 @@ const submit = handleSubmit(values => {
     <router-link to="/" class="login-link">
     login
   </router-link>
+  <p class="text-caption text-center mb-2">- アカウント登録が既にお済みの方は -</p>
+  <v-btn type="button" size="small" href="/" class="w-100">ログインページへ</v-btn>
   </v-card>
   <BaseDialog
     v-if="dialog"
@@ -173,9 +176,15 @@ const submit = handleSubmit(values => {
     btnText="閉じる"
     content="User名かE-mailが既に使用されています。"
   />
+  </div>
 </template>
 
 <style scoped>
+.fullpage {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
 .signup-card {
   width: 500px;
   position: absolute;
@@ -185,7 +194,6 @@ const submit = handleSubmit(values => {
   right: 0;
   margin: auto;
   height: 500px;
-  padding: 5rem;
 }
 
 .login-link {
