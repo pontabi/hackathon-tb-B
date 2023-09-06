@@ -132,7 +132,7 @@ const submit = handleSubmit(values => {
         v-model="name.value.value"
         :counter="10"
         :error-messages="name.errorMessage.value"
-        label="Name"
+        label="UserName"
       ></v-text-field>
 
       <v-text-field
@@ -148,27 +148,27 @@ const submit = handleSubmit(values => {
         label="Password"
       ></v-text-field>
 
-      <div class="d-flex justify-end">
-        <v-btn
-          class="me-4 test-right"
-          type="submit"
-        >
-          submit
-        </v-btn>
+      <v-btn
+        class="w-100 mb-4"
+        size="large"
+        color="blue"
+        type="submit"
+      >
+        登録する
+      </v-btn>
 
+        <!--
+          冷静に考えると、入力内容全消しするボタンって悪魔的だよね
+          なので消しました。
         <v-btn
           class="text-right"
           @click="handleReset"
         >
           clear
-        </v-btn>
-      </div>
+        </v-btn>-->
     </form>
-    <router-link to="/" class="login-link">
-    login
-  </router-link>
   <p class="text-caption text-center mb-2">- アカウント登録が既にお済みの方は -</p>
-  <v-btn type="button" size="small" href="/" class="w-100">ログインページへ</v-btn>
+  <v-btn type="button" size="small" href="/" class="w-100">ログインページ</v-btn>
   </v-card>
   <BaseDialog
     v-if="dialog"

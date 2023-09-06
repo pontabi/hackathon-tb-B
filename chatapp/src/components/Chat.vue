@@ -262,10 +262,19 @@ const isDeletable = (chat) => {
       <v-spacer></v-spacer>
       <div class="mx-4" v-if="chatList.length !== 0">
         <v-btn
+          v-if="sortOrder"
           type="button" 
           class="button-normal" 
           @click="sortOrderButton"
-          >現在: {{ sortOrder ? "降順" : "昇順" }}</v-btn>
+          icon="mdi-sort-calendar-descending"
+          ></v-btn>
+          <v-btn
+          v-else
+          type="button" 
+          class="button-normal" 
+          @click="sortOrderButton"
+          icon="mdi-sort-calendar-ascending"
+          ></v-btn>
       </div>
       <p>ログインユーザ：{{ currentUser.name }}さん</p>
     </v-app-bar>

@@ -114,13 +114,12 @@ const onDropChatTable = () => {
               ></v-alert>
               <v-text-field
                 v-model="inputUserName"
-                label="username or email"
-                @keydown.enter="onEnter"
+                label="UserName or E-mail"
                 class=""
                 type="text" />
               <v-text-field
                 v-model="inputPassword"
-                label="password"
+                label="Password"
                 @keydown.enter="onEnter"
                 class=""
                 type="password" />
