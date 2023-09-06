@@ -28,6 +28,11 @@ const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
                             created_at TEXT
                          )`
 
+const CREATE_ACTIVE_USER_SQL = `CREATE TABLE IF NOT EXISTS active_user(
+                          name TEXT UNIQUE,
+                          socket_id TEXT NOT NULL
+                       )`
+
 const GET_ALL_CHAT_SQL = `SELECT *, ROWID FROM chat ORDER BY created_at`
 const GET_ALL_USER_SQL = `SELECT *, ROWID FROM user`
 
@@ -97,8 +102,36 @@ export default (io, socket) => {
     })
   })
 
-  // 退室メッセージをクライアントに送信する
-  // socket.on("exitEvent", (newChat) => {})
+  // activeUserテーブルにユーザーを追加
+  socket.on("addActiveUser", (name, socket_id) => {
+    // activeUserテーブルにusernameとsocket.idを追加
+    db.serialize(() => {
+      db.run(CREATE_ACTIVE_USER_SQL)
+      db.run("INSERT INTO active_user(name, socket_id) VALUES(?, ?)",
+              [name, socket_id])
+      io.sockets.emit("addActiveUser", name)
+    })
+  })
+
+  // activeUserテーブルからユーザーを削除
+  socket.on("deleteActiveUser", (name) => {
+    db.run("DELETE FROM active_user WHERE name = ?",
+              [name])
+    socket.broadcast.emit("deleteActiveUser", name)
+  })
+
+  // 接続が切れた時のイベント
+  socket.on("disconnect", (reason) => {
+    db.serialize(() => {
+      db.get("SELECT * FROM active_user WHERE socket_id = ?",
+              [socket.id],
+              (err, row) => {
+                socket.broadcast.emit("deleteActiveUser", row.name)
+              })
+      db.run("DELETE FROM active_user WHERE socket_id = ?",
+              [socket.id])
+    })
+  })
 
   // 新しいチャットをdbに追加し、クライアントへ送信する
   socket.on("postEvent", (newChat) => {

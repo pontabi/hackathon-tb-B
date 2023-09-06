@@ -10,6 +10,7 @@ import ChatItem from "./ChatItem.vue";
 const currentUser = inject("currentUser")
 const chatList = inject("chatList")
 const userList = inject("userList")
+const activeUserList = inject("activeUserList")
 // #endregion
 
 // #region local variable
@@ -19,17 +20,7 @@ const router = useRouter()
 
 // #region reactive variable
 const chatContent = ref("")
-// オブジェクト型の配列を持つ
-// {"
-//   id: Integer（auto increment by sqlite)
-//   user: "Mike",
-//   content: "hello world",
-//   type: "chat / memo / enteredLog / leftLog / DMSend / DMReceive",
-//   time: "2023/7/1 22時30分0秒"
-// }
-
 const address = ref("")
-
 // falseで昇順
 const sortOrder = ref(false);
 
@@ -140,6 +131,7 @@ const onExit = () => {
     created_at: created_at,
   }
   socket.emit("postEvent", newChat)
+  socket.emit("deleteActiveUser", currentUser.name)
   socket.removeAllListeners()
   router.push({ name: "login" })
 }
@@ -239,6 +231,11 @@ const registerSocketEvent = () => {
   // 削除イベントを受け取ったら実行
   socket.on("deleteEvent", (chatId) => {
     onReceiveDelete(chatId)
+  })
+
+  // activeUserListからユーザーを削除
+  socket.on("deleteActiveUser", (name) => {
+    activeUserList.value.filter(el => el !== name)
   })
 }
 // #endregion

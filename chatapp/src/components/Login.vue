@@ -9,6 +9,7 @@ import { VAlert } from "vuetify/lib/components/index.mjs";
 const currentUser = inject("currentUser")
 const chatList = inject("chatList")
 const userList = inject("userList")
+const activeUserList = inject("activeUserList")
 // #endregion
 
 // #region local variable
@@ -66,6 +67,10 @@ const registerSocketEvent = () => {
     }
     socket.emit("postEvent", newChat)
 
+    // activeUserテーブルに自身を追加
+    socket.emit("addActiveUser", enteredUser.name, socket.id)
+
+
     // チャット画面へ遷移
     router.push({ name: "chat" })
   })
@@ -82,6 +87,11 @@ const registerSocketEvent = () => {
   // getAllUserEventを受け取ったときの処理
   socket.on("getAllUserEvent", (allUsers) => {
     userList.value = allUsers
+  })
+
+  // activeUserを追加する処理
+  socket.on("addActiveUser", (name) => {
+    activeUserList.value.push(name)
   })
 }
 // #endregion

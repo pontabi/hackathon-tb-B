@@ -10,6 +10,7 @@ import BaseDialog from "./Base/BaseDialog.vue"
 const currentUser = inject("currentUser")
 const chatList = inject("chatList")
 const userList = inject("userList")
+const activeUserList = inject("activeUserList")
 // #endregion
 
 // #region local variable
@@ -47,8 +48,10 @@ const registerSocketEvent = () => {
 
     // getAllUserEvetを送信
     socket.emit("getAllUserEvent")
+
     // getAllChatEvetを送信
     socket.emit("getAllChatEvent")
+
     // 入室ログをdbに追加
     const created_at = new Date().toISOString()
     const newChat = {
@@ -58,6 +61,9 @@ const registerSocketEvent = () => {
       created_at: created_at,
     }
     socket.emit("postEvent", newChat)
+
+    // activeUserテーブルに自身を追加
+    socket.emit("addActiveUser", enteredUser.name, socket.id)
 
     // チャット画面へ遷移
     router.push({ name: "chat" })
@@ -75,6 +81,11 @@ const registerSocketEvent = () => {
   // getAllUserEventを受け取ったときの処理
   socket.on("getAllUserEvent", (allUsers) => {
     userList.value = allUsers
+  })
+
+  // activeUserを追加する処理
+  socket.on("addActiveUser", (name) => {
+    activeUserList.value.push(name)
   })
 }
 // #endregion
