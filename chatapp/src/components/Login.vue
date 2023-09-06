@@ -142,8 +142,12 @@ const onDropChatTable = () => {
 
 <style scoped>
 .login-page {
-  width: 500px;
-  margin: 8% auto 0;
+  width: 400px;
+  margin: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translateY(-60%) translateX(-50%);
 }
 
 .signup-link {
