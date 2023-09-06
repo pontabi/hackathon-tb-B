@@ -99,7 +99,7 @@ const onDropChatTable = () => {
 
 <template>
     <v-app class="fullpage bg-blue-lighten-5">
-      <div class="login-page bg-white">
+      <v-card class="login-page bg-white">
         <div class="form text-center pa-sm-10 px-4 py-10 elevation-2">
           <form class="login-form">
             <h1 class="mb-10">Vue.js Chat</h1>
@@ -129,7 +129,7 @@ const onDropChatTable = () => {
             <v-btn type="button" size="small" href="/signup/" class="w-100">アカウント登録</v-btn>
           </form>
         </div>
-      </div>
+      </v-card>
     </v-app>
 
   <v-btn href="/db-user/">開発用・Userテーブル参照</v-btn>

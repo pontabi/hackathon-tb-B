@@ -124,7 +124,7 @@ const submit = handleSubmit(values => {
 </script>
 
 <template>
-  <div class="fullpage bg-blue-lighten-5">
+  <v-app class="fullpage bg-blue-lighten-5">
     <v-card class="signup-card pa-sm-10 px-4 py-10">
     <h1 class="text-center mb-5">ChatApp Signup</h1>
     <form @submit.prevent="submit">
@@ -176,24 +176,24 @@ const submit = handleSubmit(values => {
     btnText="閉じる"
     content="User名かE-mailが既に使用されています。"
   />
-  </div>
+  </v-app>
 </template>
 
 <style scoped>
-.fullpage {
-  height: 100vh;
-  width: 100vw;
-  position: relative;
-}
+
 .signup-card {
   width: 500px;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
   margin: auto;
-  height: 500px;
+  position: absolute; /* 絶対位置指定 */
+  top: 50%;
+  left: 50%;
+  transform: translateY(-60%) translateX(-50%);
+}
+
+@media screen and (max-width: 500px) {
+  .signup-card {
+    width: 95%;
+  }
 }
 
 .login-link {

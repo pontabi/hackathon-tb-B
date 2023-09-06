@@ -39,38 +39,42 @@ const currentUser = inject('currentUser')
   </div>
 
   <div v-else-if="chat.type === 'chat' && chat.to_who === ''">
-    <div class="">
-      {{ sender.name }}さん
-    </div>
-    <v-card class="px-4 py-2 ml-4" color="green">
+    <p class="pb-2 text-body-2">
+      {{ sender.name }}<span class="text-caption"> さん</span>
+    </p>
+    <v-card class="px-4 py-2 ml-4" color="blue-lighten-5">
       {{ chat.content }}
     </v-card>
-    <div class="text-right text-caption">
+    <div class="text-right text-caption text-medium-emphasis">
       {{ fTime }}
     </div>
   </div>
 
   <div v-if="chat.type === 'memo' && currentUser.name === sender.name">
-    <div class="">
-      {{ sender.name }}さんのメモ
+    <div class="pb-2 text-body-2">
+      あなた<span class="text-caption">（{{ sender.name }}）のメモ</span>
     </div>
-    <v-card class="px-4 py-2 ml-4" color="green">
+    <v-card class="px-4 py-2 ml-4" color="blue-lighten-5">
       {{ chat.content }}
     </v-card>
-    <div class="text-right text-caption">
+    <div class="text-right text-caption text-medium-emphasis">
       {{ fTime }}
     </div>
   </div>
 
   <div v-else-if="chat.type === 'enteredLog'">
-    <div class="text-center text-caption">
-      {{ fTime }} - {{ sender.name }}さんが入室しました
+    <div class="text-center">
+      <v-chip size="x-small">
+        {{ fTime }} - {{ sender.name }}さんが入室しました
+      </v-chip>
     </div>
   </div>
 
   <div v-else-if="chat.type === 'leftLog'">
-    <div class="text-center text-caption">
-      {{ fTime }} - {{ sender.name }}さんが退出しました
+    <div class="text-center">
+      <v-chip size="x-small">
+        {{ fTime }} - {{ sender.name }}さんが退出しました
+      </v-chip>
     </div>
   </div>
 </template>

@@ -141,6 +141,7 @@ const onExit = () => {
   }
   socket.emit("postEvent", newChat)
   socket.removeAllListeners()
+  router.push({ name: "login" })
 }
 
 // メモを画面上に表示する
@@ -258,7 +259,7 @@ const isDeletable = (chat) => {
       color="primary"
       flat
     >
-      <v-toolbar-title>Vue.js Chat チャットルーム</v-toolbar-title>
+      <v-toolbar-title>Vue.js Chat</v-toolbar-title>
       <v-spacer></v-spacer>
       <div class="mx-4" v-if="chatList.length !== 0">
         <v-btn
@@ -276,7 +277,13 @@ const isDeletable = (chat) => {
           icon="mdi-sort-calendar-ascending"
           ></v-btn>
       </div>
-      <p>ログインユーザ：{{ currentUser.name }}さん</p>
+      <v-btn
+          type="button" 
+          class="button-normal" 
+          icon="mdi-account"
+          ></v-btn>
+      <!--TODO: いい感じのところに名前を表示する-->
+      <!--<p>{{ currentUser.name }}</p>-->
     </v-app-bar>
 
     <v-navigation-drawer>
@@ -296,13 +303,11 @@ const isDeletable = (chat) => {
         ></v-list-item>
       </v-list>
       <div class="text-center">
-        <router-link to="/" class="link">
           <v-btn 
             type="button" 
             class="button-normal button-exit" 
             @click="onExit"
           >退室する</v-btn>
-        </router-link>
       </div>
     </v-navigation-drawer>
 
