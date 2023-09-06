@@ -14,7 +14,31 @@ const currentUser = inject('currentUser')
 </script>
 
 <template>
-  <div v-if="chat.type === 'chat'">
+  <div v-if="chat.type === 'chat' && chat.to_who === currentUser.name">
+    <div class="">
+      {{ sender.name }}さんからのDM
+    </div>
+    <v-card class="px-4 py-2 ml-4" color="red">
+      {{ chat.content }}
+    </v-card>
+    <div class="text-right text-caption">
+      {{ fTime }}
+    </div>
+  </div>
+
+  <div v-else-if="chat.type === 'chat' && chat.to_who !== '' && sender.name === currentUser.name">
+    <div class="">
+      {{ chat.to_who }}さんへ送ったDM
+    </div>
+    <v-card class="px-4 py-2 ml-4" color="blue">
+      {{ chat.content }}
+    </v-card>
+    <div class="text-right text-caption">
+      {{ fTime }}
+    </div>
+  </div>
+
+  <div v-else-if="chat.type === 'chat' && chat.to_who === ''">
     <div class="">
       {{ sender.name }}さん
     </div>

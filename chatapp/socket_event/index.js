@@ -24,6 +24,7 @@ const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
                                             type = 'enteredLog' or type = 'leftLog' or
                                             type = 'DMReceive' or type = 'DMSend'
                                             ),
+                            to_who TEXT,
                             created_at TEXT
                          )`
 
@@ -103,8 +104,8 @@ export default (io, socket) => {
   socket.on("postEvent", (newChat) => {
     db.serialize(() => {
       db.run(CREATE_CHAT_SQL)
-      db.run("INSERT INTO chat(user_id, content, type, created_at ) VALUES(?, ?, ?, ?)",
-            [newChat.user_id, newChat.content, newChat.type, newChat.created_at],
+      db.run("INSERT INTO chat(user_id, content, type, to_who, created_at ) VALUES(?, ?, ?, ?, ?)",
+            [newChat.user_id, newChat.content, newChat.type, newChat.to_who, newChat.created_at],
             function(err) {
                 if (err) return console.log(err.message)
                 newChat.rowid = this.lastID

@@ -112,6 +112,7 @@ const onPost = () => {
     user_id: currentUser.rowid,
     content: chatContent.value,
     type: 'chat',
+    to_who: address.value,
     created_at: created_at,
   }
   socket.emit("postEvent", newChat)
