@@ -251,32 +251,103 @@ const isDeletable = (chat) => {
 </script>
 
 <template>
-  <div class="mx-auto my-5 px-4">
-    <h1 class="text-h3 font-weight-medium">Vue.js Chat チャットルーム</h1>
-    <div class="mt-10">
+  <v-app>
+    <v-app-bar
+      class="px-3"
+      color="primary"
+      flat
+    >
+      <v-toolbar-title>Vue.js Chat チャットルーム</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <div class="mx-4" v-if="chatList.length !== 0">
+        <v-btn
+          type="button" 
+          class="button-normal" 
+          @click="sortOrderButton"
+          >現在: {{ sortOrder ? "降順" : "昇順" }}</v-btn>
+      </div>
       <p>ログインユーザ：{{ currentUser.name }}さん</p>
-      <textarea variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area" v-model="chatContent" @keyup.enter="onPost"></textarea>
-      <textarea variant="outlined" placeholder="相手のユーザーネームを入力" rows="1" class="area" v-model="address"></textarea>
-      <div class="mt-5">
-        <button class="button-normal" @click="onPost">投稿</button>
-        <button class="button-normal util-ml-8px" @click="onMemo">メモ</button>
+    </v-app-bar>
+
+    <v-navigation-drawer>
+      <v-sheet
+        color="grey-lighten-5 d-flex align-center"
+        height="100"
+        width="100%"
+      ><p class="mx-auto">CHAT ROOM</p>
+      </v-sheet>
+
+      <v-list>
+        <v-list-item
+          v-for="n in 5"
+          :key="n"
+          :title="`Item ${ n }`"
+          link
+        ></v-list-item>
+      </v-list>
+      <div class="text-center">
+        <router-link to="/" class="link">
+          <v-btn 
+            type="button" 
+            class="button-normal button-exit" 
+            @click="onExit"
+          >退室する</v-btn>
+        </router-link>
       </div>
-      <div class="mt-5" v-if="chatList.length !== 0">
-        <button type="button" class="button-normal" @click="sortOrderButton">現在: {{ sortOrder ? "降順" : "昇順" }}</button>
-        <ul>
-          <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.rowid">
-            <!-- <p>{{ getFullText(chat) }}</p>
+    </v-navigation-drawer>
+
+    <v-navigation-drawer location="right">
+      <h3><span class="pa-2">オンライン</span></h3>
+      <v-list>
+        <v-list-item
+          v-for="n in 5"
+          :key="n"
+          :title="`Item ${ n }`"
+        ></v-list-item>
+      </v-list>
+
+      <div>
+        <v-text-field
+          variant="solo-filled"
+          class="w-75 mx-auto"
+          label="DM"
+          placeholder="相手のユーザーネームを入力" 
+          width=""
+          v-model="address"
+        ></v-text-field>
+      </div>
+    </v-navigation-drawer>
+
+
+    <v-main class="ma-4">
+      <ul>
+        <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.rowid">
+          <!-- <p>{{ getFullText(chat) }}</p>
             <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button> -->
-            <ChatItem :chat="chat" />
-          </li>
-        </ul>
-      </div>
-    </div>
-    <router-link to="/" class="link">
-      <button type="button" class="button-normal button-exit " @click="onExit">退室する</button>
-    </router-link>
-    <button type="button" class="button-normal util-ml-8px" @click="onPause">{{ paused ? '受信再開' : '一時休止' }}</button>
-  </div>
+          <ChatItem :chat="chat" />
+        </li>
+      </ul>      
+
+      <v-footer app>
+        <v-text-field
+          variant="solo-filled" 
+          placeholder="メッセージを送信" 
+          class="overflow-hidden"
+          density="compact"
+          flat
+          hide-details
+          rounded="pill"
+          v-model="chatContent"
+          @keyup.enter="onPost"
+        ></v-text-field>
+
+        <div class="ml-2">
+          <v-btn class="button-normal mr-3" @click="onPost">投稿</v-btn>
+          <v-btn class="button-normal" @click="onMemo">メモ</v-btn>
+        </div>
+      </v-footer>
+    </v-main>
+  </v-app>
 </template>
 
 <style scoped>
@@ -285,23 +356,9 @@ const isDeletable = (chat) => {
   text-decoration: none;
 }
 
-.area {
-  width: 500px;
-  border: 1px solid #000;
-  margin-top: 8px;
-}
-
 .item {
   display: block;
   white-space: pre-line;
 }
 
-.util-ml-8px {
-  margin-left: 8px;
-}
-
-.button-exit {
-  color: #000;
-  margin-top: 8px;
-}
 </style>
