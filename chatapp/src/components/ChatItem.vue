@@ -21,7 +21,7 @@ const currentUser = inject('currentUser')
     <v-card class="px-4 py-2 ml-4" color="green">
       {{ chat.content }}
     </v-card>
-    <div class="text-right">
+    <div class="text-right text-caption">
       {{ fTime }}
     </div>
   </div>
@@ -30,10 +30,10 @@ const currentUser = inject('currentUser')
     <div class="">
       {{ sender.name }}さんのメモ
     </div>
-    <v-card class="p-2" color="green">
+    <v-card class="px-4 py-2 ml-4" color="green">
       {{ chat.content }}
     </v-card>
-    <div class="text-right">
+    <div class="text-right text-caption">
       {{ fTime }}
     </div>
   </div>
@@ -42,7 +42,7 @@ const currentUser = inject('currentUser')
     <div class="">
       {{ sender.name }}さんが入室しました
     </div>
-    <div class="">
+    <div class="text-caption">
       {{ fTime }}
     </div>
   </div>
@@ -51,7 +51,7 @@ const currentUser = inject('currentUser')
     <div class="">
       {{ sender.name }}さんが退出しました
     </div>
-    <div class="text-right">
+    <div class="text-caption">
       {{ fTime }}
     </div>
   </div>
