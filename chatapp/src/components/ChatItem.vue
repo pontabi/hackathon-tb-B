@@ -39,20 +39,14 @@ const currentUser = inject('currentUser')
   </div>
 
   <div v-else-if="chat.type === 'enteredLog'">
-    <div class="">
-      {{ sender.name }}さんが入室しました
-    </div>
-    <div class="text-caption">
-      {{ fTime }}
+    <div class="text-center text-caption">
+      {{ fTime }} - {{ sender.name }}さんが入室しました
     </div>
   </div>
 
   <div v-else-if="chat.type === 'leftLog'">
-    <div class="">
-      {{ sender.name }}さんが退出しました
-    </div>
-    <div class="text-caption">
-      {{ fTime }}
+    <div class="text-center text-caption">
+      {{ fTime }} - {{ sender.name }}さんが退出しました
     </div>
   </div>
 </template>
