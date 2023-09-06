@@ -328,7 +328,7 @@ const isDeletable = (chat) => {
         </li>
       </ul>      
 
-      <v-footer app>
+      <v-footer app elevation="4">
         <v-text-field
           variant="solo-filled" 
           placeholder="メッセージを送信" 
@@ -342,8 +342,8 @@ const isDeletable = (chat) => {
         ></v-text-field>
 
         <div class="ml-2">
-          <v-btn class="button-normal mr-3" @click="onPost">投稿</v-btn>
-          <v-btn class="button-normal" @click="onMemo">メモ</v-btn>
+          <v-btn class="button-normal mr-3" @click="onPost" icon="mdi-send-variant" color="primary"></v-btn>
+          <v-btn class="button-normal" @click="onMemo" icon="mdi-note" color="primary"></v-btn>
         </div>
       </v-footer>
     </v-main>
