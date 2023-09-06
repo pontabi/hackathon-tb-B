@@ -126,7 +126,9 @@ const onDropChatTable = () => {
             </div>
             <v-btn type="button" size="large" @click="onEnter" class="w-100 mb-4" color="blue">入室する</v-btn>
             <p class="text-caption mb-2">- アカウント登録がまだお済みで無い方は -</p>
-            <v-btn type="button" size="small" href="/signup/" class="w-100">アカウント登録</v-btn>
+            <router-link to="signup">
+              <v-btn type="button" size="small" href="/signup/" class="w-100">アカウント登録</v-btn>
+            </router-link>
           </form>
         </div>
       </v-card>
@@ -139,6 +141,11 @@ const onDropChatTable = () => {
 </template>
 
 <style scoped>
+.fullpage {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
 .login-page {
   width: 500px;
   margin: auto;

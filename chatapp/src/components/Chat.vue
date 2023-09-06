@@ -49,7 +49,7 @@ const sortedChatList = computed(() => {
 });
 
 //時刻表示を成形するのに使う関数
-const takeTime = ()=>{
+const takeTime = () => {
   let date = new Date()
   return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}時${date.getMinutes()}分${date.getSeconds()}秒`
 }
@@ -80,7 +80,7 @@ const getFullText = (chat) => {
   }
 }
 
-const addChat = (userId, content="", type, time) => {
+const addChat = (userId, content = "", type, time) => {
   // type引数が chat / memo / enteredLog / leftLog / DMReceive / DMSend　以外だったら早期リターン
   const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog", "DMReceive", "DMSend"].includes(type)
   if (hasInvalidType) return
@@ -264,22 +264,22 @@ const isDeletable = (chat) => {
       <div class="mx-4" v-if="chatList.length !== 0">
         <v-btn
           v-if="sortOrder"
-          type="button" 
-          class="button-normal" 
+          type="button"
+          class="button-normal"
           @click="sortOrderButton"
           icon="mdi-sort-calendar-descending"
           ></v-btn>
           <v-btn
           v-else
-          type="button" 
-          class="button-normal" 
+          type="button"
+          class="button-normal"
           @click="sortOrderButton"
           icon="mdi-sort-calendar-ascending"
           ></v-btn>
       </div>
       <v-btn
-          type="button" 
-          class="button-normal" 
+          type="button"
+          class="button-normal"
           icon="mdi-account"
           ></v-btn>
       <!--TODO: いい感じのところに名前を表示する-->
@@ -303,11 +303,13 @@ const isDeletable = (chat) => {
         ></v-list-item>
       </v-list>
       <div class="text-center">
-          <v-btn 
-            type="button" 
-            class="button-normal button-exit" 
+        <router-link to="/" class="link">
+          <v-btn
+            type="button"
+            class="button-normal button-exit"
             @click="onExit"
           >退室する</v-btn>
+        </router-link>
       </div>
     </v-navigation-drawer>
 
@@ -326,7 +328,7 @@ const isDeletable = (chat) => {
           variant="solo-filled"
           class="w-75 mx-auto"
           label="DM"
-          placeholder="相手のユーザーネームを入力" 
+          placeholder="相手のユーザーネームを入力"
           width=""
           v-model="address"
         ></v-text-field>
@@ -341,12 +343,12 @@ const isDeletable = (chat) => {
             <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button> -->
           <ChatItem :chat="chat" />
         </li>
-      </ul>      
+      </ul>
 
       <v-footer app elevation="4">
         <v-text-field
-          variant="solo-filled" 
-          placeholder="メッセージを送信" 
+          variant="solo-filled"
+          placeholder="メッセージを送信"
           class="overflow-hidden"
           density="compact"
           flat
@@ -366,7 +368,6 @@ const isDeletable = (chat) => {
 </template>
 
 <style scoped>
-
 .link {
   text-decoration: none;
 }

@@ -168,7 +168,9 @@ const submit = handleSubmit(values => {
         </v-btn>-->
     </form>
   <p class="text-caption text-center mb-2">- アカウント登録が既にお済みの方は -</p>
-  <v-btn type="button" size="small" href="/" class="w-100">ログインページ</v-btn>
+  <router-link to="/">
+    <v-btn type="button" size="small" href="/" class="w-100">ログインページ</v-btn>
+  </router-link>
   </v-card>
   <BaseDialog
     v-if="dialog"
