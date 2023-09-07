@@ -154,14 +154,14 @@ const onDropActiveUserTable = () => {
                 label="Password"
                 @keydown.enter="onEnter"
                 class=""
-                type="password" 
+                type="password"
               ></v-text-field>
               <v-select
                 v-model="inputRoomName"
                 label="chat room"
                 @keydown.enter="onEnter"
                 class=""
-                :items="chatRooms" 
+                :items="chatRooms"
               ></v-select>
             </div>
             <v-btn type="button" size="large" @click="onEnter" class="w-100 mb-4" color="blue">入室する</v-btn>

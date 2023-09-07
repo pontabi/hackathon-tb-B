@@ -3,6 +3,7 @@ import { inject, ref, reactive, onMounted, computed, watch } from "vue"
 import io from "socket.io-client"
 import { useRouter } from "vue-router";
 import ChatItem from "./ChatItem.vue";
+import getAvatar from "../../helpers/getAvatar";
 
 
 
@@ -53,53 +54,6 @@ const sortedChatList = computed(() => {
     return chatList.value.slice();
   }
 });
-
-//時刻表示を成形するのに使う関数
-const takeTime = () => {
-  let date = new Date()
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}時${date.getMinutes()}分${date.getSeconds()}秒`
-}
-
-// addChat内で使う関数
-const getFullText = (chat) => {
-  try {
-    const user = userList.value.find(el => el.rowid === chat.user_id)
-    switch (chat.type) {
-      case "chat":
-        return `${user.name}さん：${chat.content}：${chat.created_at}`
-      case "memo":
-        if (currentUser.name !== user.name) return undefined
-        return `${user.name}さんのメモ：${chat.content}：${chat.created_at}`
-      case "enteredLog":
-        return `${user.name}さんが入室しました：${chat.created_at}`
-      case "leftLog":
-        return `${user.name}さんが退出しました：${chat.created_at}`
-      case "DMReceive":
-        return `${user.name}さんからのDM：${chat.content}：${chat.created_at}`
-      case "DMSend":
-        return `自分で送ったDM：${chat.content}：${chat.created_at}`
-      default:
-        return undefined
-    }
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-const addChat = (userId, content = "", type, time) => {
-  // type引数が chat / memo / enteredLog / leftLog / DMReceive / DMSend　以外だったら早期リターン
-  const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog", "DMReceive", "DMSend"].includes(type)
-  if (hasInvalidType) return
-
-  const newChat = {
-    user_id: userId,
-    content: content,
-    type: type,
-    time: time,
-  }
-  socket.on("addChat", newChat)
-}
-
 
 // #endregion
 
@@ -188,13 +142,7 @@ const onReceiveEnter = (newUser) => {
   userList.value.push(newUser)
 }
 
-// サーバから受信した退室者を受け取り画面上に退室メッセージを表示する
-const onReceiveExit = (leftUserName, time) => {
-  addChat(leftUserName, "", "leftLog", time)
-}
-
 // サーバから受信した投稿メッセージを画面上に表示する
-
 const onReceivePost = (newChat) => {
   // if (!paused.value) {
   //   if(address==""){
@@ -259,6 +207,11 @@ const registerSocketEvent = () => {
     // users = [{name: String}, {}...]
     activeUserList.value = users
   })
+}
+// userListからnameで探索
+const getUserByName = (name) => {
+  const user = userList.value.find(el => el.name === name)
+  return user
 }
 // #endregion
 
@@ -340,8 +293,11 @@ const isDeletable = (chat) => {
           :key="user.name"
         >
           <v-badge dot color="success" offset-y="1">
-            <v-avatar color="secondary" size="32" density="compact" >
-              A
+            <v-avatar color="secondary" size="32px" density="compact" >
+              <v-img
+                alt="Avatar"
+                :src="getUserByName(user.name).avatar_url"
+              ></v-img>
             </v-avatar>
           </v-badge>
           <span class="pl-2">{{ user.name }}</span>
@@ -363,7 +319,7 @@ const isDeletable = (chat) => {
 
     <v-main class="ma-4">
       <ul>
-        <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.rowid">
+        <li class="item mt-4" v-for="chat in chatList" :key="chat.rowid">
           <!-- <p>{{ getFullText(chat) }}</p>
             <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button> -->
           <ChatItem :chat="chat" />
