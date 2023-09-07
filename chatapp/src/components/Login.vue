@@ -19,8 +19,17 @@ const socket = io()
 // #region reactive variable
 const inputUserName = ref("")
 const inputPassword = ref("")
+const inputRoomName = ref("")
 const loginFailed = ref(false)
 // #endregion
+
+const chatRooms = [
+  'ルームA',
+  'ルームB',
+  'ルームC',
+  'ルームD',
+  'ルームE',
+]
 
 // #region lifecycle
 onMounted(() => {
@@ -34,10 +43,17 @@ const onEnter = () => {
   // ユーザー名とEmailが入力されているかチェック
   if (!inputUserName.value && !inputPassword.value) return
 
+  // ルーム名が入力されているかチェック
+  if (!inputRoomName.value) return
+
+  // チャットルームが選択されているかチェック
+  const selectRoom = chatRooms.find((room) => room === inputRoomName.value)
+  if (!selectRoom) return
+
   // パスワードをsha256でハッシュ化
   const password = sha256(inputPassword.value)
   // 入室イベントを送信
-  socket.emit("loginEvent", inputUserName.value, password)
+  socket.emit("loginEvent", inputUserName.value, password, inputRoomName.value)
 
 }
 // #endregion
@@ -51,11 +67,12 @@ const registerSocketEvent = () => {
     currentUser.rowid = enteredUser.rowid
     currentUser.name = enteredUser.name
     currentUser.email = enteredUser.email
+    currentUser.room = inputRoomName.value
 
     // getAllUserEvetを送信
-    socket.emit("getAllUserEvent")
+    socket.emit("getAllUserEvent", currentUser.room)
     // getAllChatEvetを送信
-    socket.emit("getAllChatEvent")
+    socket.emit("getAllChatEvent", currentUser.room)
     // 入室ログをdbに追加
     const created_at = new Date().toISOString()
     const newChat = {
@@ -63,6 +80,7 @@ const registerSocketEvent = () => {
       content: "",
       type: 'enteredLog',
       created_at: created_at,
+      room: currentUser.room
     }
     socket.emit("postEvent", newChat)
 
@@ -123,7 +141,15 @@ const onDropChatTable = () => {
                 label="password"
                 @keydown.enter="onEnter"
                 class=""
-                type="password" />
+                type="password" 
+              ></v-text-field>
+              <v-select
+                v-model="inputRoomName"
+                label="chat room"
+                @keydown.enter="onEnter"
+                class=""
+                :items="chatRooms" 
+              ></v-select>
             </div>
             <v-btn type="button" size="large" @click="onEnter" class="w-100 mb-4" color="blue">入室する</v-btn>
             <p class="text-caption mb-2">- アカウント登録がまだお済みで無い方は -</p>

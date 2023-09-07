@@ -14,7 +14,8 @@ const db = new sqlite3.Database(path.join(process.cwd(), "/resources/test.db"), 
 const CREATE_USER_SQL = `CREATE TABLE IF NOT EXISTS user(
                             name TEXT UNIQUE,
                             email TEXT UNIQUE,
-                            password TEXT NOT NULL
+                            password TEXT NOT NULL,
+                            room TEXT NOT NULL
                          )`
 
 const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
@@ -24,11 +25,12 @@ const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
                                             type = 'enteredLog' or type = 'leftLog' or
                                             type = 'DMReceive' or type = 'DMSend'
                                             ),
-                            created_at TEXT
+                            created_at TEXT,
+                            room TEXT
                          )`
 
-const GET_ALL_CHAT_SQL = `SELECT *, ROWID FROM chat ORDER BY created_at`
-const GET_ALL_USER_SQL = `SELECT *, ROWID FROM user`
+const GET_ALL_CHAT_SQL = `SELECT *, ROWID FROM chat WHERE room = ? ORDER BY created_at`
+const GET_ALL_USER_SQL = `SELECT *, ROWID FROM user WHERE room = ?`
 
 //////////////////////////
 // socketイベント処理
@@ -43,8 +45,8 @@ export default (io, socket) => {
             socket.emit("signupFailedEvent", row)
           // 新規ユーザーだった場合
           } else {
-            db.run("INSERT INTO user(name, email, password) VALUES(?, ?, ?)",
-                    [newUser.name, newUser.email, newUser.password],
+            db.run("INSERT INTO user(name, email, password, room) VALUES(?, ?, ?, ?)",
+                    [newUser.name, newUser.email, newUser.password, "ルームA"],
                     function(err) {
                         if (err) return console.log(err.message)
                         newUser.rowid = this.lastID
@@ -55,7 +57,7 @@ export default (io, socket) => {
     })
   })
   // login処理
-  socket.on("loginEvent", (uniqueValue, password) => {
+  socket.on("loginEvent", (uniqueValue, password, roomValue) => {
     db.serialize(() => {
       db.run(CREATE_USER_SQL)
         .get("SELECT *, ROWID FROM user WHERE (email = ? OR name = ?) AND password = ?",
@@ -63,6 +65,8 @@ export default (io, socket) => {
          (err, row) => {
             // user名とpasswordが合っていた場合, emailとpasswordが合っていた場合
             if (row) {
+              // ログインしたユーザーのroomを更新
+              db.run("UPDATE user SET room = ? WHERE ROWID = ?", [roomValue, row.rowid])
               // ログインしたユーザー情報をloginEventへ返す
               socket.emit("loginSuccessEvent", row)
               // ログインしたユーザー情報を他のクライアントにも送信
@@ -75,10 +79,10 @@ export default (io, socket) => {
   })
 
   // 全てのチャットを送信する
-  socket.on("getAllChatEvent", () => {
+  socket.on("getAllChatEvent", (roomChats) => {
     db.serialize(() => {
       db.run(CREATE_CHAT_SQL)
-      db.all(GET_ALL_CHAT_SQL, [], (err, rows) => {
+      db.all(GET_ALL_CHAT_SQL, [roomChats], (err, rows) => {
         if (err) throw err
         socket.emit("getAllChatEvent", rows)
       })
@@ -86,10 +90,10 @@ export default (io, socket) => {
   })
 
   // 全てのユーザーを送信する
-  socket.on("getAllUserEvent", () => {
+  socket.on("getAllUserEvent", (roomUsers) => {
     db.serialize(() => {
       db.run(CREATE_USER_SQL)
-      db.all(GET_ALL_USER_SQL, [], (err, rows) => {
+      db.all(GET_ALL_USER_SQL, [roomUsers], (err, rows) => {
         if (err) throw err
         socket.emit("getAllUserEvent", rows)
       })
@@ -103,8 +107,8 @@ export default (io, socket) => {
   socket.on("postEvent", (newChat) => {
     db.serialize(() => {
       db.run(CREATE_CHAT_SQL)
-      db.run("INSERT INTO chat(user_id, content, type, created_at ) VALUES(?, ?, ?, ?)",
-            [newChat.user_id, newChat.content, newChat.type, newChat.created_at],
+      db.run("INSERT INTO chat(user_id, content, type, created_at, room ) VALUES(?, ?, ?, ?, ?)",
+            [newChat.user_id, newChat.content, newChat.type, newChat.created_at, newChat.room],
             function(err) {
                 if (err) return console.log(err.message)
                 newChat.rowid = this.lastID

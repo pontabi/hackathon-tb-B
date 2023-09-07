@@ -30,6 +30,14 @@ const chatContent = ref("")
 
 const address = ref("")
 
+const chatRooms = reactive([
+  'ルームA',
+  'ルームB',
+  'ルームC',
+  'ルームD',
+  'ルームE',
+])
+
 // falseで昇順
 const sortOrder = ref(false);
 
@@ -40,7 +48,13 @@ const sortOrderButton = () => {
 
 // sortOrderがfalseなら昇順、trueなら降順
 const sortedChatList = computed(() => {
-  console.log(chatList.value)
+  //const roomIndex = chatRooms.indexOf(currentUser.room)
+  //console.log(roomIndex)
+  //if (sortOrder.value) {
+  //  return chatList.value.slice().reverse();
+  //} else {
+  //  return chatList.value.slice();
+  //}
   if (sortOrder.value) {
     return chatList.value.slice().reverse();
   } else {
@@ -93,6 +107,7 @@ const addChat = (userId, content="", type, time) => {
   }
   socket.on("addChat", newChat)
 }
+
 
 // #endregion
 
@@ -196,6 +211,10 @@ const onReceivePost = (newChat) => {
   // } else {
   //   console.log("受信を一時停止しています")
   // }
+  //const roomIndex = chatRooms.indexOf(currentUser.room)
+  //console.log(roomIndex)
+  //chatList[roomIndex].push(newChat)
+  //console.log(chatList[0])
   chatList.value.push(newChat)
 }
 
@@ -258,7 +277,7 @@ const isDeletable = (chat) => {
       flat
     >
       <v-toolbar-title>Vue.js Chat チャットルーム</v-toolbar-title>
-      <v-spacer></v-spacer>
+      <v-spacer>{{ currentUser.room }}</v-spacer>
       <div class="mx-4" v-if="chatList.length !== 0">
         <v-btn
           type="button" 

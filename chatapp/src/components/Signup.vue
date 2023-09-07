@@ -35,7 +35,7 @@ const registerSocketEvent = () => {
 
   // signupSuccessEventイベントを受け取ったら実行
   socket.on("signupSuccessEvent", (user) => {
-    socket.emit("loginEvent", user.name, user.password)
+    socket.emit("loginEvent", user.name, user.password, "ルームA")
     router.push({ name: "chat" })
   })
   // 入室イベントを受け取った時の処理
@@ -44,11 +44,12 @@ const registerSocketEvent = () => {
     currentUser.rowid = enteredUser.rowid
     currentUser.name = enteredUser.name
     currentUser.email = enteredUser.email
+    currentUser.room = "ルームA"
 
     // getAllUserEvetを送信
-    socket.emit("getAllUserEvent")
+    socket.emit("getAllUserEvent", currentUser.room)
     // getAllChatEvetを送信
-    socket.emit("getAllChatEvent")
+    socket.emit("getAllChatEvent", currentUser.room)
     // 入室ログをdbに追加
     const created_at = new Date().toISOString()
     const newChat = {
@@ -56,6 +57,7 @@ const registerSocketEvent = () => {
       content: "",
       type: 'enteredLog',
       created_at: created_at,
+      room: currentUser.room
     }
     socket.emit("postEvent", newChat)
 
