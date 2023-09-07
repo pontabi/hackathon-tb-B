@@ -2,8 +2,8 @@ import { createRouter, createWebHistory } from "vue-router"
 import Chat from "../components/Chat.vue"
 import Login from "../components/Login.vue"
 import Signup from "../components/Signup.vue"
-import DbUser from "../components/DbUser.vue"
-import DbChat from "../components/DbChat.vue"
+import DbUser from "../components/Dev/DbUser.vue"
+import DbChat from "../components/Dev/DbChat.vue"
 
 const router = createRouter({
   history: createWebHistory(),

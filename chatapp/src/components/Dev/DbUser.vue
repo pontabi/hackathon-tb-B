@@ -36,6 +36,7 @@ onMounted(() => {
         <th scope="col">id</th>
         <th scope="col">name</th>
         <th scope="col">email</th>
+        <th scope="col">password</th>
       </tr>
     </thead>
     <tbody>
@@ -43,16 +44,20 @@ onMounted(() => {
         <th scope="row">{{ user.rowid }}</th>
         <td>{{ user.name }}</td>
         <td>{{ user.email }}</td>
+        <td>{{ user.password }}</td>
       </tr>
     </tbody>
   </table>
   <p v-else>UserListの要素が空です。</p>
-  <v-btn href="/">TOPへ戻る</v-btn>
+  <router-link to="/" class="link">
+    <v-btn>TOPへ戻る</v-btn>
+  </router-link>
 </template>
 
 <style scoped>
 .link {
   text-decoration: none;
+  color: #000;
 }
 
 .area {

@@ -148,9 +148,13 @@ const onDropActiveUserTable = () => {
       </v-card>
     </v-app>
 
-  <v-btn href="/db-user/">開発用・Userテーブル参照</v-btn>
+  <router-link to="/db-user" class="link">
+    <v-btn>開発用・Userテーブル参照</v-btn>
+  </router-link>
+  <router-link to="/db-chat" class="link">
+    <v-btn>開発用・Chatテーブル参照</v-btn>
+  </router-link>
   <v-btn @click="onDropUserTable" color="red">開発用・Userテーブル削除</v-btn>
-  <v-btn href="/db-chat/">開発用・Chatテーブル参照</v-btn>
   <v-btn @click="onDropChatTable" color="red">開発用・Chatテーブル削除</v-btn>
   <v-btn @click="onDropActiveUserTable" color="red">開発用・ActiveUserテーブル削除</v-btn>
 </template>
