@@ -140,7 +140,7 @@ const onDropActiveUserTable = () => {
             </div>
             <v-btn type="button" size="large" @click="onEnter" class="w-100 mb-4" color="blue">入室する</v-btn>
             <p class="text-caption mb-2">- アカウント登録がまだお済みで無い方は -</p>
-            <router-link to="signup">
+            <router-link to="signup" class="link">
               <v-btn type="button" size="small" href="/signup/" class="w-100">アカウント登録</v-btn>
             </router-link>
           </form>
@@ -156,6 +156,9 @@ const onDropActiveUserTable = () => {
 </template>
 
 <style scoped>
+.link {
+  color: #000;
+}
 .fullpage {
   height: 100vh;
   width: 100vw;
