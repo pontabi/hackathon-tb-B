@@ -37,6 +37,7 @@ onMounted(() => {
         <th scope="col">user_id</th>
         <th scope="col">content</th>
         <th scope="col">type</th>
+        <th scope="col">to_who</th>
         <th scope="col">created_at</th>
       </tr>
     </thead>
@@ -46,17 +47,21 @@ onMounted(() => {
         <td>{{ chat.user_id }}</td>
         <td>{{ chat.content }}</td>
         <td>{{ chat.type }}</td>
+        <td>{{ chat.to_who }}</td>
         <td>{{ chat.created_at }}</td>
       </tr>
     </tbody>
   </table>
   <p v-else>ChatListの要素が空です。</p>
-  <v-btn href="/">TOPへ戻る</v-btn>
+  <router-link to="/" class="link">
+    <v-btn>TOPへ戻る</v-btn>
+  </router-link>
 </template>
 
 <style scoped>
 .link {
   text-decoration: none;
+  color: #000;
 }
 
 .area {

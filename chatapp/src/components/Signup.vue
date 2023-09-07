@@ -179,7 +179,7 @@ const submit = handleSubmit(values => {
         </v-btn>-->
     </form>
   <p class="text-caption text-center mb-2">- アカウント登録が既にお済みの方は -</p>
-  <router-link to="/">
+  <router-link to="/" class="link">
     <v-btn type="button" size="small" href="/" class="w-100">ログインページ</v-btn>
   </router-link>
   </v-card>
@@ -193,7 +193,9 @@ const submit = handleSubmit(values => {
 </template>
 
 <style scoped>
-
+.link {
+  color: #000;
+}
 .signup-card {
   width: 500px;
   margin: auto;

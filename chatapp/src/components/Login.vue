@@ -166,7 +166,7 @@ const onDropActiveUserTable = () => {
             </div>
             <v-btn type="button" size="large" @click="onEnter" class="w-100 mb-4" color="blue">入室する</v-btn>
             <p class="text-caption mb-2">- アカウント登録がまだお済みで無い方は -</p>
-            <router-link to="signup">
+            <router-link to="signup" class="link">
               <v-btn type="button" size="small" href="/signup/" class="w-100">アカウント登録</v-btn>
             </router-link>
           </form>
@@ -174,14 +174,21 @@ const onDropActiveUserTable = () => {
       </v-card>
     </v-app>
 
-  <v-btn href="/db-user/">開発用・Userテーブル参照</v-btn>
+  <router-link to="/db-user" class="link">
+    <v-btn>開発用・Userテーブル参照</v-btn>
+  </router-link>
+  <router-link to="/db-chat" class="link">
+    <v-btn>開発用・Chatテーブル参照</v-btn>
+  </router-link>
   <v-btn @click="onDropUserTable" color="red">開発用・Userテーブル削除</v-btn>
-  <v-btn href="/db-chat/">開発用・Chatテーブル参照</v-btn>
   <v-btn @click="onDropChatTable" color="red">開発用・Chatテーブル削除</v-btn>
   <v-btn @click="onDropActiveUserTable" color="red">開発用・ActiveUserテーブル削除</v-btn>
 </template>
 
 <style scoped>
+.link {
+  color: #000;
+}
 .fullpage {
   height: 100vh;
   width: 100vw;
