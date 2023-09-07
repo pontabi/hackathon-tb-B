@@ -145,6 +145,7 @@ const onExit = () => {
     content: chatContent.value,
     type: 'leftLog',
     created_at: created_at,
+    room: currentUser.room
   }
   socket.emit("postEvent", newChat)
   socket.emit("deleteActiveUser", currentUser.name)

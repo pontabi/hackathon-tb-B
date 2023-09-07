@@ -62,7 +62,7 @@ const currentUser = inject('currentUser')
     </div>
   </div>
 
-  <div v-else-if="chat.type === 'enteredLog' && currentUser.room === sender.room">
+  <div v-else-if="chat.type === 'enteredLog' && currentUser.room === chat.room">
     <div class="text-center">
       <v-chip size="x-small">
         {{ fTime }} - {{ sender.name }}さんが入室しました
@@ -70,7 +70,7 @@ const currentUser = inject('currentUser')
     </div>
   </div>
 
-  <div v-else-if="chat.type === 'leftLog' && currentUser.room === sender.room">
+  <div v-else-if="chat.type === 'leftLog' && currentUser.room === chat.room">
     <div class="text-center">
       <v-chip size="x-small">
         {{ fTime }} - {{ sender.name }}さんが退出しました

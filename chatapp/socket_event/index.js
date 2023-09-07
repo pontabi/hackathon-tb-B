@@ -124,6 +124,7 @@ export default (io, socket) => {
     db.serialize(() => {
       db.run("DELETE FROM active_user WHERE name = ?",
                 [name])
+      db.run("UPDATE user SET room = ?", '')
       db.all("SELECT name FROM active_user",[], (err, rows) => {
         io.sockets.emit("refreshActiveUser", rows)
       })
@@ -146,7 +147,7 @@ export default (io, socket) => {
   socket.on("postEvent", (newChat) => {
     db.serialize(() => {
       db.run(CREATE_CHAT_SQL)
-      db.run("INSERT INTO chat(user_id, content, type, to_who, created_at, room ) VALUES(?, ?, ?, ?, ?, ?)",
+      db.run("INSERT INTO chat(user_id, content, type, to_who, created_at, room) VALUES(?, ?, ?, ?, ?, ?)",
             [newChat.user_id, newChat.content, newChat.type, newChat.to_who, newChat.created_at, newChat.room],
             function(err) {
                 if (err) return console.log(err.message)
