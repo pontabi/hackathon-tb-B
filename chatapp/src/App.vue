@@ -8,12 +8,15 @@ const currentUser = reactive({})
 const userList = ref([])
 // db上の全チャット
 const chatList = ref([])
+// db上の全アクティブユーザー
+const activeUserList = ref([])
 // #endregion
 
 // #region global variable
 provide("currentUser", currentUser)
 provide("userList", userList)
 provide("chatList", chatList)
+provide("activeUserList", activeUserList)
 // #endregion
 </script>
 

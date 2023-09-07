@@ -9,6 +9,7 @@ import { VAlert } from "vuetify/lib/components/index.mjs";
 const currentUser = inject("currentUser")
 const chatList = inject("chatList")
 const userList = inject("userList")
+const activeUserList = inject("activeUserList")
 // #endregion
 
 // #region local variable
@@ -70,9 +71,9 @@ const registerSocketEvent = () => {
     currentUser.room = inputRoomName.value
 
     // getAllUserEvetを送信
-    socket.emit("getAllUserEvent", currentUser.room)
+    socket.emit("getAllUserEvent")
     // getAllChatEvetを送信
-    socket.emit("getAllChatEvent", currentUser.room)
+    socket.emit("getAllChatEvent")
     // 入室ログをdbに追加
     const created_at = new Date().toISOString()
     const newChat = {
@@ -83,6 +84,10 @@ const registerSocketEvent = () => {
       room: currentUser.room
     }
     socket.emit("postEvent", newChat)
+
+    // activeUserテーブルに自身を追加
+    socket.emit("addActiveUser", enteredUser.name, socket.id)
+
 
     // チャット画面へ遷移
     router.push({ name: "chat" })
@@ -101,6 +106,12 @@ const registerSocketEvent = () => {
   socket.on("getAllUserEvent", (allUsers) => {
     userList.value = allUsers
   })
+
+  // activeUserListを更新する処理
+  socket.on("refreshActiveUser", (users) => {
+    // users = [{name: String}, {}...]
+    activeUserList.value = users
+  })
 }
 // #endregion
 
@@ -112,12 +123,15 @@ const onDropUserTable = () => {
 const onDropChatTable = () => {
   socket.emit("dropChatTableEvent")
 }
+const onDropActiveUserTable = () => {
+  socket.emit("dropActiveUserTableEvent")
+}
 // #endregion
 </script>
 
 <template>
     <v-app class="fullpage bg-blue-lighten-5">
-      <div class="login-page bg-white">
+      <v-card class="login-page bg-white">
         <div class="form text-center pa-sm-10 px-4 py-10 elevation-2">
           <form class="login-form">
             <h1 class="mb-10">Vue.js Chat</h1>
@@ -132,13 +146,12 @@ const onDropChatTable = () => {
               ></v-alert>
               <v-text-field
                 v-model="inputUserName"
-                label="username or email"
-                @keydown.enter="onEnter"
+                label="UserName or E-mail"
                 class=""
                 type="text" />
               <v-text-field
                 v-model="inputPassword"
-                label="password"
+                label="Password"
                 @keydown.enter="onEnter"
                 class=""
                 type="password" 
@@ -153,19 +166,27 @@ const onDropChatTable = () => {
             </div>
             <v-btn type="button" size="large" @click="onEnter" class="w-100 mb-4" color="blue">入室する</v-btn>
             <p class="text-caption mb-2">- アカウント登録がまだお済みで無い方は -</p>
-            <v-btn type="button" size="small" href="/signup/" class="w-100">アカウント登録</v-btn>
+            <router-link to="signup">
+              <v-btn type="button" size="small" href="/signup/" class="w-100">アカウント登録</v-btn>
+            </router-link>
           </form>
         </div>
-      </div>
+      </v-card>
     </v-app>
 
   <v-btn href="/db-user/">開発用・Userテーブル参照</v-btn>
   <v-btn @click="onDropUserTable" color="red">開発用・Userテーブル削除</v-btn>
   <v-btn href="/db-chat/">開発用・Chatテーブル参照</v-btn>
   <v-btn @click="onDropChatTable" color="red">開発用・Chatテーブル削除</v-btn>
+  <v-btn @click="onDropActiveUserTable" color="red">開発用・ActiveUserテーブル削除</v-btn>
 </template>
 
 <style scoped>
+.fullpage {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
 .login-page {
   width: 500px;
   margin: auto;

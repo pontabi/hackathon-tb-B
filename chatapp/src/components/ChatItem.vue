@@ -14,45 +14,67 @@ const currentUser = inject('currentUser')
 </script>
 
 <template>
-  <div v-if="chat.type === 'chat'">
+  <div v-if="chat.type === 'chat' && chat.to_who === currentUser.name">
     <div class="">
-      {{ sender.name }}さん
+      {{ sender.name }}さんからのDM
     </div>
-    <v-card class="px-4 py-2 ml-4" color="green">
+    <v-card class="px-4 py-2 ml-4" color="red">
       {{ chat.content }}
     </v-card>
-    <div class="text-right">
+    <div class="text-right text-caption">
+      {{ fTime }}
+    </div>
+  </div>
+
+  <div v-else-if="chat.type === 'chat' && chat.to_who !== '' && sender.name === currentUser.name">
+    <div class="">
+      {{ chat.to_who }}さんへ送ったDM
+    </div>
+    <v-card class="px-4 py-2 ml-4" color="blue">
+      {{ chat.content }}
+    </v-card>
+    <div class="text-right text-caption">
+      {{ fTime }}
+    </div>
+  </div>
+
+  <div v-else-if="chat.type === 'chat' && chat.to_who === '' && currentUser.room === sender.room">
+    <p class="pb-2 text-body-2">
+      {{ sender.name }}<span class="text-caption"> さん</span>
+    </p>
+    <v-card class="px-4 py-2 ml-4" color="blue-lighten-5">
+      {{ chat.content }}
+    </v-card>
+    <div class="text-right text-caption text-medium-emphasis">
       {{ fTime }}
     </div>
   </div>
 
   <div v-if="chat.type === 'memo' && currentUser.name === sender.name">
-    <div class="">
-      {{ sender.name }}さんのメモ
+    <div class="pb-2 text-body-2">
+      あなた<span class="text-caption">（{{ sender.name }}）のメモ</span>
     </div>
-    <v-card class="p-2" color="green">
+    <v-card class="px-4 py-2 ml-4" color="blue-lighten-5">
       {{ chat.content }}
     </v-card>
-    <div class="text-right">
+    <div class="text-right text-caption text-medium-emphasis">
       {{ fTime }}
     </div>
   </div>
 
-  <div v-else-if="chat.type === 'enteredLog'">
-    <div class="">
-      {{ sender.name }}さんが入室しました
-    </div>
-    <div class="">
-      {{ fTime }}
+  <div v-else-if="chat.type === 'enteredLog' && currentUser.room === sender.room">
+    <div class="text-center">
+      <v-chip size="x-small">
+        {{ fTime }} - {{ sender.name }}さんが入室しました
+      </v-chip>
     </div>
   </div>
 
-  <div v-else-if="chat.type === 'leftLog'">
-    <div class="">
-      {{ sender.name }}さんが退出しました
-    </div>
-    <div class="text-right">
-      {{ fTime }}
+  <div v-else-if="chat.type === 'leftLog' && currentUser.room === sender.room">
+    <div class="text-center">
+      <v-chip size="x-small">
+        {{ fTime }} - {{ sender.name }}さんが退出しました
+      </v-chip>
     </div>
   </div>
 </template>

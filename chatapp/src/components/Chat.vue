@@ -10,6 +10,7 @@ import ChatItem from "./ChatItem.vue";
 const currentUser = inject("currentUser")
 const chatList = inject("chatList")
 const userList = inject("userList")
+const activeUserList = inject("activeUserList")
 // #endregion
 
 // #region local variable
@@ -19,15 +20,6 @@ const router = useRouter()
 
 // #region reactive variable
 const chatContent = ref("")
-// オブジェクト型の配列を持つ
-// {"
-//   id: Integer（auto increment by sqlite)
-//   user: "Mike",
-//   content: "hello world",
-//   type: "chat / memo / enteredLog / leftLog / DMSend / DMReceive",
-//   time: "2023/7/1 22時30分0秒"
-// }
-
 const address = ref("")
 
 const chatRooms = reactive([
@@ -63,7 +55,7 @@ const sortedChatList = computed(() => {
 });
 
 //時刻表示を成形するのに使う関数
-const takeTime = ()=>{
+const takeTime = () => {
   let date = new Date()
   return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}時${date.getMinutes()}分${date.getSeconds()}秒`
 }
@@ -94,7 +86,7 @@ const getFullText = (chat) => {
   }
 }
 
-const addChat = (userId, content="", type, time) => {
+const addChat = (userId, content = "", type, time) => {
   // type引数が chat / memo / enteredLog / leftLog / DMReceive / DMSend　以外だったら早期リターン
   const hasInvalidType = !["chat", "memo", "enteredLog", "leftLog", "DMReceive", "DMSend"].includes(type)
   if (hasInvalidType) return
@@ -127,6 +119,7 @@ const onPost = () => {
     user_id: currentUser.rowid,
     content: chatContent.value,
     type: 'chat',
+    to_who: address.value,
     created_at: created_at,
   }
   socket.emit("postEvent", newChat)
@@ -154,7 +147,9 @@ const onExit = () => {
     created_at: created_at,
   }
   socket.emit("postEvent", newChat)
+  socket.emit("deleteActiveUser", currentUser.name)
   socket.removeAllListeners()
+  router.push({ name: "login" })
 }
 
 // メモを画面上に表示する
@@ -257,6 +252,12 @@ const registerSocketEvent = () => {
   socket.on("deleteEvent", (chatId) => {
     onReceiveDelete(chatId)
   })
+
+  // activeUserListを更新する処理
+  socket.on("refreshActiveUser", (users) => {
+    // users = [{name: String}, {}...]
+    activeUserList.value = users
+  })
 }
 // #endregion
 
@@ -277,15 +278,30 @@ const isDeletable = (chat) => {
       flat
     >
       <v-toolbar-title>Vue.js Chat チャットルーム</v-toolbar-title>
-      <v-spacer>{{ currentUser.room }}</v-spacer>
+      <v-spacer></v-spacer>
       <div class="mx-4" v-if="chatList.length !== 0">
         <v-btn
-          type="button" 
-          class="button-normal" 
+          v-if="sortOrder"
+          type="button"
+          class="button-normal"
           @click="sortOrderButton"
-          >現在: {{ sortOrder ? "降順" : "昇順" }}</v-btn>
+          icon="mdi-sort-calendar-descending"
+          ></v-btn>
+          <v-btn
+          v-else
+          type="button"
+          class="button-normal"
+          @click="sortOrderButton"
+          icon="mdi-sort-calendar-ascending"
+          ></v-btn>
       </div>
-      <p>ログインユーザ：{{ currentUser.name }}さん</p>
+      <v-btn
+          type="button"
+          class="button-normal"
+          icon="mdi-account"
+          ></v-btn>
+      <!--TODO: いい感じのところに名前を表示する-->
+      <!--<p>{{ currentUser.name }}</p>-->
     </v-app-bar>
 
     <v-navigation-drawer>
@@ -293,7 +309,7 @@ const isDeletable = (chat) => {
         color="grey-lighten-5 d-flex align-center"
         height="100"
         width="100%"
-      ><p class="mx-auto">CHAT ROOM</p>
+      ><p class="mx-auto">{{ currentUser.room }}</p>
       </v-sheet>
 
       <v-list>
@@ -306,9 +322,9 @@ const isDeletable = (chat) => {
       </v-list>
       <div class="text-center">
         <router-link to="/" class="link">
-          <v-btn 
-            type="button" 
-            class="button-normal button-exit" 
+          <v-btn
+            type="button"
+            class="button-normal button-exit"
             @click="onExit"
           >退室する</v-btn>
         </router-link>
@@ -319,10 +335,16 @@ const isDeletable = (chat) => {
       <h3><span class="pa-2">オンライン</span></h3>
       <v-list>
         <v-list-item
-          v-for="n in 5"
-          :key="n"
-          :title="`Item ${ n }`"
-        ></v-list-item>
+          v-for="user in activeUserList"
+          :key="user.name"
+        >
+          <v-badge dot color="success" offset-y="1">
+            <v-avatar color="secondary" size="32" density="compact" >
+              A
+            </v-avatar>
+          </v-badge>
+          <span class="pl-2">{{ user.name }}</span>
+        </v-list-item>
       </v-list>
 
       <div>
@@ -330,7 +352,7 @@ const isDeletable = (chat) => {
           variant="solo-filled"
           class="w-75 mx-auto"
           label="DM"
-          placeholder="相手のユーザーネームを入力" 
+          placeholder="相手のユーザーネームを入力"
           width=""
           v-model="address"
         ></v-text-field>
@@ -345,12 +367,12 @@ const isDeletable = (chat) => {
             <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button> -->
           <ChatItem :chat="chat" />
         </li>
-      </ul>      
+      </ul>
 
       <v-footer app elevation="4">
         <v-text-field
-          variant="solo-filled" 
-          placeholder="メッセージを送信" 
+          variant="solo-filled"
+          placeholder="メッセージを送信"
           class="overflow-hidden"
           density="compact"
           flat
@@ -370,7 +392,6 @@ const isDeletable = (chat) => {
 </template>
 
 <style scoped>
-
 .link {
   text-decoration: none;
 }

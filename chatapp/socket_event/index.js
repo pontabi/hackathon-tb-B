@@ -15,7 +15,7 @@ const CREATE_USER_SQL = `CREATE TABLE IF NOT EXISTS user(
                             name TEXT UNIQUE,
                             email TEXT UNIQUE,
                             password TEXT NOT NULL,
-                            room TEXT NOT NULL
+                            room TEXT 
                          )`
 
 const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
@@ -25,12 +25,18 @@ const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
                                             type = 'enteredLog' or type = 'leftLog' or
                                             type = 'DMReceive' or type = 'DMSend'
                                             ),
+                            to_who TEXT,
                             created_at TEXT,
                             room TEXT
                          )`
 
-const GET_ALL_CHAT_SQL = `SELECT *, ROWID FROM chat WHERE room = ? ORDER BY created_at`
-const GET_ALL_USER_SQL = `SELECT *, ROWID FROM user WHERE room = ?`
+const CREATE_ACTIVE_USER_SQL = `CREATE TABLE IF NOT EXISTS active_user(
+                          name TEXT UNIQUE,
+                          socket_id TEXT NOT NULL
+                       )`
+
+const GET_ALL_CHAT_SQL = `SELECT *, ROWID FROM chat ORDER BY created_at`
+const GET_ALL_USER_SQL = `SELECT *, ROWID FROM user`
 
 //////////////////////////
 // socketイベント処理
@@ -79,10 +85,10 @@ export default (io, socket) => {
   })
 
   // 全てのチャットを送信する
-  socket.on("getAllChatEvent", (roomChats) => {
+  socket.on("getAllChatEvent", () => {
     db.serialize(() => {
       db.run(CREATE_CHAT_SQL)
-      db.all(GET_ALL_CHAT_SQL, [roomChats], (err, rows) => {
+      db.all(GET_ALL_CHAT_SQL, [], (err, rows) => {
         if (err) throw err
         socket.emit("getAllChatEvent", rows)
       })
@@ -90,25 +96,58 @@ export default (io, socket) => {
   })
 
   // 全てのユーザーを送信する
-  socket.on("getAllUserEvent", (roomUsers) => {
+  socket.on("getAllUserEvent", () => {
     db.serialize(() => {
       db.run(CREATE_USER_SQL)
-      db.all(GET_ALL_USER_SQL, [roomUsers], (err, rows) => {
+      db.all(GET_ALL_USER_SQL, [], (err, rows) => {
         if (err) throw err
         socket.emit("getAllUserEvent", rows)
       })
     })
   })
 
-  // 退室メッセージをクライアントに送信する
-  // socket.on("exitEvent", (newChat) => {})
+  // activeUserテーブルにユーザーを追加
+  socket.on("addActiveUser", (name, socket_id) => {
+    // activeUserテーブルにusernameとsocket.idを追加
+    db.serialize(() => {
+      db.run(CREATE_ACTIVE_USER_SQL)
+      db.run("INSERT INTO active_user(name, socket_id) VALUES(?, ?)",
+              [name, socket_id])
+      db.all("SELECT name FROM active_user",[], (err, rows) => {
+        io.sockets.emit("refreshActiveUser", rows)
+      })
+    })
+  })
+
+  // activeUserテーブルからユーザーを削除
+  socket.on("deleteActiveUser", (name) => {
+    db.serialize(() => {
+      db.run("DELETE FROM active_user WHERE name = ?",
+                [name])
+      db.all("SELECT name FROM active_user",[], (err, rows) => {
+        io.sockets.emit("refreshActiveUser", rows)
+      })
+    })
+  })
+
+  // 接続が切れた時、そのクライアントをactiveUserから削除
+  socket.on("disconnect", (reason) => {
+    db.serialize(() => {
+      db.run("DELETE FROM active_user WHERE socket_id = ?",
+              [socket.id])
+      db.run("UPDATE user SET room = ?", '')
+      db.all("SELECT name FROM active_user",[], (err, rows) => {
+        io.sockets.emit("refreshActiveUser", rows)
+      })
+    })
+  })
 
   // 新しいチャットをdbに追加し、クライアントへ送信する
   socket.on("postEvent", (newChat) => {
     db.serialize(() => {
       db.run(CREATE_CHAT_SQL)
-      db.run("INSERT INTO chat(user_id, content, type, created_at, room ) VALUES(?, ?, ?, ?, ?)",
-            [newChat.user_id, newChat.content, newChat.type, newChat.created_at, newChat.room],
+      db.run("INSERT INTO chat(user_id, content, type, to_who, created_at, room ) VALUES(?, ?, ?, ?, ?, ?)",
+            [newChat.user_id, newChat.content, newChat.type, newChat.to_who, newChat.created_at, newChat.room],
             function(err) {
                 if (err) return console.log(err.message)
                 newChat.rowid = this.lastID
@@ -148,5 +187,10 @@ export default (io, socket) => {
   // 開発用のchatテーブル削除イベント
   socket.on("dropChatTableEvent", () => {
     db.run(`DROP TABLE chat`)
+  })
+
+  // 開発用のactiveUserテーブル削除イベント
+  socket.on("dropActiveUserTableEvent", () => {
+    db.run(`DROP TABLE active_user`)
   })
 }
