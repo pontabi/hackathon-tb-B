@@ -233,9 +233,10 @@ const registerSocketEvent = () => {
     onReceiveDelete(chatId)
   })
 
-  // activeUserListからユーザーを削除
-  socket.on("deleteActiveUser", (name) => {
-    activeUserList.value.filter(el => el !== name)
+  // activeUserListを更新する処理
+  socket.on("refreshActiveUser", (users) => {
+    // users = [{name: String}, {}...]
+    activeUserList.value = users
   })
 }
 // #endregion
@@ -314,10 +315,16 @@ const isDeletable = (chat) => {
       <h3><span class="pa-2">オンライン</span></h3>
       <v-list>
         <v-list-item
-          v-for="n in 5"
-          :key="n"
-          :title="`Item ${ n }`"
-        ></v-list-item>
+          v-for="user in activeUserList"
+          :key="user.name"
+        >
+          <v-badge dot color="success" offset-y="1">
+            <v-avatar color="secondary" size="32" density="compact" >
+              A
+            </v-avatar>
+          </v-badge>
+          <span class="pl-2">{{ user.name }}</span>
+        </v-list-item>
       </v-list>
 
       <div>

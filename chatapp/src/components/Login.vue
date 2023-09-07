@@ -89,9 +89,10 @@ const registerSocketEvent = () => {
     userList.value = allUsers
   })
 
-  // activeUserを追加する処理
-  socket.on("addActiveUser", (name) => {
-    activeUserList.value.push(name)
+  // activeUserListを更新する処理
+  socket.on("refreshActiveUser", (users) => {
+    // users = [{name: String}, {}...]
+    activeUserList.value = users
   })
 }
 // #endregion
@@ -103,6 +104,9 @@ const onDropUserTable = () => {
 }
 const onDropChatTable = () => {
   socket.emit("dropChatTableEvent")
+}
+const onDropActiveUserTable = () => {
+  socket.emit("dropActiveUserTableEvent")
 }
 // #endregion
 </script>
@@ -148,6 +152,7 @@ const onDropChatTable = () => {
   <v-btn @click="onDropUserTable" color="red">開発用・Userテーブル削除</v-btn>
   <v-btn href="/db-chat/">開発用・Chatテーブル参照</v-btn>
   <v-btn @click="onDropChatTable" color="red">開発用・Chatテーブル削除</v-btn>
+  <v-btn @click="onDropActiveUserTable" color="red">開発用・ActiveUserテーブル削除</v-btn>
 </template>
 
 <style scoped>

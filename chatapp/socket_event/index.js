@@ -109,27 +109,31 @@ export default (io, socket) => {
       db.run(CREATE_ACTIVE_USER_SQL)
       db.run("INSERT INTO active_user(name, socket_id) VALUES(?, ?)",
               [name, socket_id])
-      io.sockets.emit("addActiveUser", name)
+      db.all("SELECT name FROM active_user",[], (err, rows) => {
+        io.sockets.emit("refreshActiveUser", rows)
+      })
     })
   })
 
   // activeUserテーブルからユーザーを削除
   socket.on("deleteActiveUser", (name) => {
-    db.run("DELETE FROM active_user WHERE name = ?",
-              [name])
-    socket.broadcast.emit("deleteActiveUser", name)
+    db.serialize(() => {
+      db.run("DELETE FROM active_user WHERE name = ?",
+                [name])
+      db.all("SELECT name FROM active_user",[], (err, rows) => {
+        io.sockets.emit("refreshActiveUser", rows)
+      })
+    })
   })
 
-  // 接続が切れた時のイベント
+  // 接続が切れた時、そのクライアントをactiveUserから削除
   socket.on("disconnect", (reason) => {
     db.serialize(() => {
-      db.get("SELECT * FROM active_user WHERE socket_id = ?",
-              [socket.id],
-              (err, row) => {
-                socket.broadcast.emit("deleteActiveUser", row.name)
-              })
       db.run("DELETE FROM active_user WHERE socket_id = ?",
               [socket.id])
+      db.all("SELECT name FROM active_user",[], (err, rows) => {
+        io.sockets.emit("refreshActiveUser", rows)
+      })
     })
   })
 
@@ -178,5 +182,10 @@ export default (io, socket) => {
   // 開発用のchatテーブル削除イベント
   socket.on("dropChatTableEvent", () => {
     db.run(`DROP TABLE chat`)
+  })
+
+  // 開発用のactiveUserテーブル削除イベント
+  socket.on("dropActiveUserTableEvent", () => {
+    db.run(`DROP TABLE active_user`)
   })
 }
