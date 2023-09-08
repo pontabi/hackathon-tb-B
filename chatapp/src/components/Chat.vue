@@ -338,7 +338,7 @@ const isDeletable = (chat) => {
           ></v-btn>
       </div>
       </v-app-bar>
-      <ul>
+      <ul class="p-0">
         <li class="item mt-4" v-for="chat in chatList" :key="chat.rowid">
           <!-- <p>{{ getFullText(chat) }}</p>
             <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button> -->
