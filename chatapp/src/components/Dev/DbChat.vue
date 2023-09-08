@@ -39,6 +39,7 @@ onMounted(() => {
         <th scope="col">type</th>
         <th scope="col">to_who</th>
         <th scope="col">created_at</th>
+        <th scope="col">room</th>
       </tr>
     </thead>
     <tbody>
@@ -49,6 +50,7 @@ onMounted(() => {
         <td>{{ chat.type }}</td>
         <td>{{ chat.to_who }}</td>
         <td>{{ chat.created_at }}</td>
+        <td>{{ chat.room }}</td>
       </tr>
     </tbody>
   </table>

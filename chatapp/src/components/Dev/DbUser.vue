@@ -37,6 +37,7 @@ onMounted(() => {
         <th scope="col">name</th>
         <th scope="col">email</th>
         <th scope="col">password</th>
+        <th scope="col">room</th>
       </tr>
     </thead>
     <tbody>
@@ -45,6 +46,7 @@ onMounted(() => {
         <td>{{ user.name }}</td>
         <td>{{ user.email }}</td>
         <td>{{ user.password }}</td>
+        <td>{{ user.room }}</td>
       </tr>
     </tbody>
   </table>

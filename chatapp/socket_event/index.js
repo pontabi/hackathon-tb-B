@@ -124,7 +124,7 @@ export default (io, socket) => {
     db.serialize(() => {
       db.run("DELETE FROM active_user WHERE name = ?",
                 [name])
-      db.run("UPDATE user SET room = ?", '')
+      db.run("UPDATE user SET room = ? WHERE ROWID = ?", ['', name.user_id])
       db.all("SELECT name FROM active_user",[], (err, rows) => {
         io.sockets.emit("refreshActiveUser", rows)
       })
@@ -136,7 +136,7 @@ export default (io, socket) => {
     db.serialize(() => {
       db.run("DELETE FROM active_user WHERE socket_id = ?",
               [socket.id])
-      db.run("UPDATE user SET room = ?", '')
+      db.run("UPDATE user SET room = ? WHERE ROWID = ?", ['', reason.user_id])
       db.all("SELECT name FROM active_user",[], (err, rows) => {
         io.sockets.emit("refreshActiveUser", rows)
       })
@@ -167,6 +167,17 @@ export default (io, socket) => {
               io.sockets.emit("memoEvent", newChat)
            })
   })
+
+  // ルームを変更した時の処理
+  socket.on("roomEvent", (changedRoom) => {
+    db.run("UPDATE user SET room = ? WHERE ROWID = ?", 
+    [changedRoom.room, changedRoom.rowid],
+    function(err) {
+      if (err) return console.log(err.message)
+      io.sockets.emit("roomEvent", changedRoom)
+    })
+  })
+
 
   // 削除する投稿オブジェクトを送信する
   socket.on("deleteEvent", (chatId) => {

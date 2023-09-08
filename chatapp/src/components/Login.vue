@@ -1,5 +1,5 @@
 <script setup>
-import { inject, onMounted, ref } from "vue"
+import { inject, onMounted, reactive, ref } from "vue"
 import { useRouter } from "vue-router"
 import io from "socket.io-client"
 import { sha256 } from "js-sha256";
@@ -24,13 +24,13 @@ const inputRoomName = ref("")
 const loginFailed = ref(false)
 // #endregion
 
-const chatRooms = [
+const chatRooms = ([
   'ルームA',
   'ルームB',
   'ルームC',
   'ルームD',
   'ルームE',
-]
+])
 
 // #region lifecycle
 onMounted(() => {

@@ -22,7 +22,7 @@ const router = useRouter()
 const chatContent = ref("")
 const address = ref("")
 
-const chatRooms = reactive([
+const chatRooms = ([
   'ルームA',
   'ルームB',
   'ルームC',
@@ -121,6 +121,7 @@ const onPost = () => {
     type: 'chat',
     to_who: address.value,
     created_at: created_at,
+    room: currentUser.room
   }
   socket.emit("postEvent", newChat)
 
@@ -171,6 +172,17 @@ const onMemo = () => {
   address.value = ""
 }
 
+const onChange = (changeRoom) => {
+  currentUser.room = changeRoom
+  //socket.emit("getAllChatEvent")
+  //socket.emit("getAllUserEvent")
+  console.log(currentUser.room + "に変更しました")
+  const newRoom = {
+    user_id: currentUser.rowid,
+    room: currentUser.room
+  }
+  socket.emit("roomEvent", newRoom)
+}
 
 // 休止フラグ
 const paused = ref(false)
@@ -246,9 +258,14 @@ const registerSocketEvent = () => {
 
   // 投稿イベントを受け取ったら実行
   socket.on("postEvent", (newChat) => {
+    console.log(newChat.room + "に送った")
     onReceivePost(newChat)
   })
 
+  socket.on("roomEvent", (newChat) => {
+    console.log(newChat.room + "に送られました")
+    //onChange(newChat.room)
+  })
   // 削除イベントを受け取ったら実行
   socket.on("deleteEvent", (chatId) => {
     onReceiveDelete(chatId)
@@ -315,10 +332,10 @@ const isDeletable = (chat) => {
 
       <v-list>
         <v-list-item
-          v-for="n in 5"
-          :key="n"
-          :title="`Item ${ n }`"
-          link
+          v-for="(room, index) in chatRooms"
+          :key="room"
+          :title="room"
+          @click="onChange(room)"
         ></v-list-item>
       </v-list>
       <div class="text-center">

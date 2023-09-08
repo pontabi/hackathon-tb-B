@@ -38,7 +38,7 @@ const currentUser = inject('currentUser')
     </div>
   </div>
 
-  <div v-else-if="chat.type === 'chat' && chat.to_who === '' && currentUser.room === sender.room">
+  <div v-else-if="chat.type === 'chat' && chat.to_who === '' && currentUser.room === chat.room">
     <p class="pb-2 text-body-2">
       {{ sender.name }}<span class="text-caption"> さん</span>
     </p>
@@ -50,7 +50,7 @@ const currentUser = inject('currentUser')
     </div>
   </div>
 
-  <div v-if="chat.type === 'memo' && currentUser.name === sender.name">
+  <div v-else-if="chat.type === 'memo' && currentUser.name === sender.name">
     <div class="pb-2 text-body-2">
       あなた<span class="text-caption">（{{ sender.name }}）のメモ</span>
     </div>
