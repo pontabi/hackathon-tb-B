@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.2.96",
+    "gravatar": "^1.8.2",
     "js-sha256": "^0.10.1",
     "socket.io": "^4.5.3",
     "socket.io-client": "^4.5.3",

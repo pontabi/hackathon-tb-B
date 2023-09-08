@@ -1,5 +1,6 @@
 <script setup>
 import { inject } from 'vue'
+import UserLabel from './UserLabel.vue';
 
 const props = defineProps(['chat'])
 
@@ -39,9 +40,7 @@ const currentUser = inject('currentUser')
   </div>
 
   <div v-else-if="chat.type === 'chat' && chat.to_who === '' && currentUser.room === chat.room">
-    <p class="pb-2 text-body-2">
-      {{ sender.name }}<span class="text-caption"> さん</span>
-    </p>
+    <UserLabel :sender="sender"></UserLabel>
     <v-card class="px-4 py-2 ml-4" color="blue-lighten-5">
       {{ chat.content }}
     </v-card>

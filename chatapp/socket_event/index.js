@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3"
 import path from "node:path"
 import { log } from "node:console"
+import getAvatar from "../helpers/getAvatar"
 
 //////////////////////////
 // データベースに接続
@@ -15,7 +16,8 @@ const CREATE_USER_SQL = `CREATE TABLE IF NOT EXISTS user(
                             name TEXT UNIQUE,
                             email TEXT UNIQUE,
                             password TEXT NOT NULL,
-                            room TEXT 
+                            room TEXT,
+                            avatar_url TEXT NOT NULL
                          )`
 
 const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
@@ -51,8 +53,9 @@ export default (io, socket) => {
             socket.emit("signupFailedEvent", row)
           // 新規ユーザーだった場合
           } else {
-            db.run("INSERT INTO user(name, email, password, room) VALUES(?, ?, ?, ?)",
-                    [newUser.name, newUser.email, newUser.password, "ルームA"],
+            const avatar_url = getAvatar(newUser.email, 100)
+            db.run("INSERT INTO user(name, email, password, room, avatar_url) VALUES(?, ?, ?, ?, ?)",
+                    [newUser.name, newUser.email, newUser.password, "ルームA", avatar_url],
                     function(err) {
                         if (err) return console.log(err.message)
                         newUser.rowid = this.lastID
