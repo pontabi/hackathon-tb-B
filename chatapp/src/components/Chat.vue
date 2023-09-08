@@ -250,22 +250,6 @@ const isDeletable = (chat) => {
     >
       <v-toolbar-title>Vue.js Chat チャットルーム</v-toolbar-title>
       <v-spacer></v-spacer>
-      <div class="mx-4" v-if="chatList.length !== 0">
-        <v-btn
-          v-if="sortOrder"
-          type="button"
-          class="button-normal"
-          @click="sortOrderButton"
-          icon="mdi-sort-calendar-descending"
-          ></v-btn>
-          <v-btn
-          v-else
-          type="button"
-          class="button-normal"
-          @click="sortOrderButton"
-          icon="mdi-sort-calendar-ascending"
-          ></v-btn>
-      </div>
       <v-btn
           type="button"
           class="button-normal"
@@ -276,14 +260,8 @@ const isDeletable = (chat) => {
     </v-app-bar>
 
     <v-navigation-drawer>
-      <v-sheet
-        color="grey-lighten-5 d-flex align-center"
-        height="100"
-        width="100%"
-      ><p class="mx-auto">{{ currentUser.room }}</p>
-      </v-sheet>
-
       <v-list>
+        <v-list-subheader>ROOMS</v-list-subheader>
         <v-list-item
           v-for="(room, index) in chatRooms"
           :key="room"
@@ -303,8 +281,8 @@ const isDeletable = (chat) => {
     </v-navigation-drawer>
 
     <v-navigation-drawer location="right">
-      <h3><span class="pa-2">オンライン</span></h3>
       <v-list>
+        <v-list-subheader>ONLINE USERS</v-list-subheader>
         <v-list-item
           v-for="user in activeUserList"
           :key="user.name"
@@ -335,6 +313,30 @@ const isDeletable = (chat) => {
 
 
     <v-main class="ma-4">
+      <v-app-bar
+      elevation="1"
+      density="compact"
+      flat
+      >
+      <v-toolbar-title class="text-body-1">{{ currentUser.room }}</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <div class="mx-4" v-if="chatList.length !== 0">
+        <v-btn
+          v-if="sortOrder"
+          type="button"
+          class="button-normal"
+          @click="sortOrderButton"
+          icon="mdi-sort-calendar-descending"
+          ></v-btn>
+          <v-btn
+          v-else
+          type="button"
+          class="button-normal"
+          @click="sortOrderButton"
+          icon="mdi-sort-calendar-ascending"
+          ></v-btn>
+      </div>
+      </v-app-bar>
       <ul>
         <li class="item mt-4" v-for="chat in chatList" :key="chat.rowid">
           <!-- <p>{{ getFullText(chat) }}</p>
