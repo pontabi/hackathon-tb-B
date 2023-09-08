@@ -104,6 +104,7 @@ const onExit = () => {
   }
   socket.emit("postEvent", newChat)
   socket.emit("deleteActiveUser", currentUser.name)
+  socket.emit("roomEvent", '', currentUser.rowid)
   socket.removeAllListeners()
   router.push({ name: "login" })
 }
@@ -128,14 +129,7 @@ const onMemo = () => {
 
 const onChange = (changeRoom) => {
   currentUser.room = changeRoom
-  //socket.emit("getAllChatEvent")
-  //socket.emit("getAllUserEvent")
-  console.log(currentUser.room + "に変更しました")
-  const newRoom = {
-    user_id: currentUser.rowid,
-    room: currentUser.room
-  }
-  socket.emit("roomEvent", newRoom)
+  socket.emit("roomEvent", currentUser.room, currentUser.rowid)
 }
 
 // 休止フラグ
@@ -290,6 +284,13 @@ const isDeletable = (chat) => {
           :title="room"
           @click="onChange(room)"
         ></v-list-item>
+        <!--
+        <v-badge dot color="success" v-if="room === currentUser.room">
+          <template v-slot:badge>
+            <v-icon>mdi-check-circle</v-icon>
+          </template>
+        </v-badge>
+      -->
       </v-list>
       <div class="text-center">
         <router-link to="/" class="link">

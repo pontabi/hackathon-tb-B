@@ -127,24 +127,40 @@ export default (io, socket) => {
     db.serialize(() => {
       db.run("DELETE FROM active_user WHERE name = ?",
                 [name])
-      db.run("UPDATE user SET room = ? WHERE ROWID = ?", ['', name.user_id])
       db.all("SELECT name FROM active_user",[], (err, rows) => {
         io.sockets.emit("refreshActiveUser", rows)
       })
     })
   })
 
-  // 接続が切れた時、そのクライアントをactiveUserから削除
+  // 接続が切れた時、そのクライアントをactiveUserから削除し、userテーブルのroomをnullにする
   socket.on("disconnect", (reason) => {
     db.serialize(() => {
-      db.run("DELETE FROM active_user WHERE socket_id = ?",
-              [socket.id])
-      db.run("UPDATE user SET room = ? WHERE ROWID = ?", ['', reason.user_id])
-      db.all("SELECT name FROM active_user",[], (err, rows) => {
-        io.sockets.emit("refreshActiveUser", rows)
-      })
-    })
-  })
+      db.run("UPDATE user SET room = '' WHERE user.name = (SELECT active_user.name FROM active_user WHERE active_user.socket_id = ?)", [socket.id], (err) => {
+        if (err) {
+          console.error("Error deleting active user:", err);
+          return;
+        }
+  
+        db.run("DELETE FROM active_user WHERE socket_id = ?", [socket.id], (err) => {
+          if (err) {
+            console.error("Error updating user room:", err);
+            return;
+          }
+  
+          db.all("SELECT name FROM active_user", [], (err, rows) => {
+            if (err) {
+              console.error("Error retrieving active users:", err);
+              return;
+            }
+  
+            io.sockets.emit("refreshActiveUser", rows);
+          });
+        });
+      });
+    });
+  });
+  
 
   // 新しいチャットをdbに追加し、クライアントへ送信する
   socket.on("postEvent", (newChat) => {
@@ -172,9 +188,9 @@ export default (io, socket) => {
   })
 
   // ルームを変更した時の処理
-  socket.on("roomEvent", (changedRoom) => {
+  socket.on("roomEvent", (changedRoom, userId) => {
     db.run("UPDATE user SET room = ? WHERE ROWID = ?", 
-    [changedRoom.room, changedRoom.rowid],
+    [changedRoom, userId],
     function(err) {
       if (err) return console.log(err.message)
       io.sockets.emit("roomEvent", changedRoom)
