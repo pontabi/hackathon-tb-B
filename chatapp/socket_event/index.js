@@ -33,8 +33,8 @@ const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
                          )`
 
 const CREATE_ACTIVE_USER_SQL = `CREATE TABLE IF NOT EXISTS active_user(
-                          name TEXT UNIQUE,
-                          socket_id TEXT NOT NULL
+                          name TEXT,
+                          socket_id TEXT UNIQUE NOT NULL
                        )`
 
 const GET_ALL_CHAT_SQL = `SELECT *, ROWID FROM chat ORDER BY created_at`
@@ -116,7 +116,8 @@ export default (io, socket) => {
       db.run(CREATE_ACTIVE_USER_SQL)
       db.run("INSERT INTO active_user(name, socket_id) VALUES(?, ?)",
               [name, socket_id])
-      db.all("SELECT name FROM active_user",[], (err, rows) => {
+      // 重複なしでアクティブユーザー取得
+      db.all("SELECT DISTINCT name FROM active_user",[], (err, rows) => {
         io.sockets.emit("refreshActiveUser", rows)
       })
     })
@@ -141,26 +142,26 @@ export default (io, socket) => {
           console.error("Error deleting active user:", err);
           return;
         }
-  
+
         db.run("DELETE FROM active_user WHERE socket_id = ?", [socket.id], (err) => {
           if (err) {
             console.error("Error updating user room:", err);
             return;
           }
-  
+
           db.all("SELECT name FROM active_user", [], (err, rows) => {
             if (err) {
               console.error("Error retrieving active users:", err);
               return;
             }
-  
+
             io.sockets.emit("refreshActiveUser", rows);
           });
         });
       });
     });
   });
-  
+
 
   // 新しいチャットをdbに追加し、クライアントへ送信する
   socket.on("postEvent", (newChat) => {
@@ -189,7 +190,7 @@ export default (io, socket) => {
 
   // ルームを変更した時の処理
   socket.on("roomEvent", (changedRoom, userId) => {
-    db.run("UPDATE user SET room = ? WHERE ROWID = ?", 
+    db.run("UPDATE user SET room = ? WHERE ROWID = ?",
     [changedRoom, userId],
     function(err) {
       if (err) return console.log(err.message)
