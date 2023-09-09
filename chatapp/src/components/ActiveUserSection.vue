@@ -82,13 +82,12 @@ const getUserByName = (name) => {
 
 // 最終ログインのフォーマット
 const fLastLogin = (date) => {
-  const formattedDate = new Date(date)
-  const month = formattedDate.getMonth() + 1; // Add 1 because months are zero-indexed
-  const day = formattedDate.getDate();
-  const hour = formattedDate.getHours();
-  const minute = formattedDate.getMinutes();
+  const datetime = new Date(date)
+  const month = datetime.getMonth() + 1;
+  const day = datetime.getDate();
+  const hour = datetime.getHours();
+  const minute = datetime.getMinutes();
 
-  // Format the date and time without a comma
   return `最終ログイン: ${month}/${day} ${hour}:${minute.toString().padStart(2, '0')}`;
 
 }
