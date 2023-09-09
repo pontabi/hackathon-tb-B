@@ -5,15 +5,17 @@
       v-for="user in activeUserList"
       :key="user.name"
     >
-      <v-badge dot color="success" offset-y="1">
-        <v-avatar color="secondary" size="32px" density="compact" >
-          <v-img
-            alt="Avatar"
-            :src="getUserByName(user.name).avatar_url"
-          ></v-img>
-        </v-avatar>
-      </v-badge>
-      <span class="pl-2">{{ user.name }}</span>
+      <div class="d-flex">
+        <v-badge dot color="success" offset-y="1">
+          <v-avatar color="secondary" size="32px" density="compact" >
+            <v-img
+              alt="Avatar"
+              :src="getUserByName(user.name).avatar_url"
+            ></v-img>
+          </v-avatar>
+        </v-badge>
+        <p class="pl-2 m-0 name">{{ user.name }}</p>
+      </div>
     </v-list-item>
   </v-list>
 
@@ -23,15 +25,17 @@
       v-for="user in inActiveUserList"
       :key="user.name"
     >
-      <v-badge dot color="grey" offset-y="1">
-        <v-avatar color="secondary" size="32px" density="compact" >
-          <v-img
-            alt="Avatar"
-            :src="getUserByName(user.name).avatar_url"
-          ></v-img>
-        </v-avatar>
-      </v-badge>
-      <span class="pl-2">{{ user.name }}</span>
+    <div class="d-flex">
+        <v-badge dot color="grey-darken-1" offset-y="1">
+          <v-avatar color="secondary" size="32px" density="compact" >
+            <v-img
+              alt="Avatar"
+              :src="getUserByName(user.name).avatar_url"
+            ></v-img>
+          </v-avatar>
+        </v-badge>
+        <p class="pl-2 m-0 name">{{ user.name }}</p>
+      </div>
     </v-list-item>
   </v-list>
 </template>
@@ -70,6 +74,8 @@ const getUserByName = (name) => {
 
 </script>
 
-<style lang="scss" scoped>
-
+<style scoped>
+.name {
+  transform: translate(0, 4px);
+}
 </style>
