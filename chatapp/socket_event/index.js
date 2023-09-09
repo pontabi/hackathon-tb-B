@@ -17,7 +17,8 @@ const CREATE_USER_SQL = `CREATE TABLE IF NOT EXISTS user(
                             email TEXT UNIQUE,
                             password TEXT NOT NULL,
                             room TEXT,
-                            avatar_url TEXT NOT NULL
+                            avatar_url TEXT NOT NULL,
+                            last_login TEXT
                          )`
 
 const CREATE_CHAT_SQL = `CREATE TABLE IF NOT EXISTS chat(
@@ -54,8 +55,9 @@ export default (io, socket) => {
           // 新規ユーザーだった場合
           } else {
             const avatar_url = getAvatar(newUser.email, 100)
-            db.run("INSERT INTO user(name, email, password, room, avatar_url) VALUES(?, ?, ?, ?, ?)",
-                    [newUser.name, newUser.email, newUser.password, "ルームA", avatar_url],
+            const last_login = new Date().toISOString()
+            db.run("INSERT INTO user(name, email, password, room, avatar_url, last_login) VALUES(?, ?, ?, ?, ?, ?)",
+                    [newUser.name, newUser.email, newUser.password, "ルームA", avatar_url, last_login],
                     function(err) {
                         if (err) return console.log(err.message)
                         newUser.rowid = this.lastID
@@ -74,10 +76,13 @@ export default (io, socket) => {
          (err, row) => {
             // user名とpasswordが合っていた場合, emailとpasswordが合っていた場合
             if (row) {
-              // ログインしたユーザーのroomを更新
-              db.run("UPDATE user SET room = ? WHERE ROWID = ?", [roomValue, row.rowid])
-              // ログインしたユーザー情報をloginEventへ返す
+              // ログインしたユーザーのroomとlast_loginを更新
+              const last_login = new Date().toISOString()
+              db.run("UPDATE user SET room = ?, last_login = ? WHERE ROWID = ?", [roomValue, last_login, row.rowid])
+
+              // ログインしたユーザー情報をloginSuccessEventへ返す
               socket.emit("loginSuccessEvent", row)
+
               // ログインしたユーザー情報を他のクライアントにも送信
               socket.broadcast.emit("enterEvent", row)
             } else {

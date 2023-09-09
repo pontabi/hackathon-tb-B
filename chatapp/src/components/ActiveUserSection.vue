@@ -26,6 +26,7 @@
       :key="user.name"
     >
     <div class="d-flex">
+
         <v-badge dot color="grey-darken-1" offset-y="1">
           <v-avatar color="secondary" size="32px" density="compact" >
             <v-img
@@ -34,7 +35,16 @@
             ></v-img>
           </v-avatar>
         </v-badge>
-        <p class="pl-2 m-0 name">{{ user.name }}</p>
+        <div>
+          <p class="pl-2 m-0 name">
+            {{ user.name }}
+          </p>
+
+          <p class="pl-2 m-0 last-login">
+            {{ fLastLogin(getUserByName(user.name).last_login) }}
+          </p>
+        </div>
+
       </div>
     </v-list-item>
   </v-list>
@@ -70,6 +80,19 @@ const getUserByName = (name) => {
   return user
 }
 
+// 最終ログインのフォーマット
+const fLastLogin = (date) => {
+  const formattedDate = new Date(date)
+  const month = formattedDate.getMonth() + 1; // Add 1 because months are zero-indexed
+  const day = formattedDate.getDate();
+  const hour = formattedDate.getHours();
+  const minute = formattedDate.getMinutes();
+
+  // Format the date and time without a comma
+  return `最終ログイン: ${month}/${day} ${hour}:${minute.toString().padStart(2, '0')}`;
+
+}
+
 
 
 </script>
@@ -77,5 +100,10 @@ const getUserByName = (name) => {
 <style scoped>
 .name {
   transform: translate(0, 4px);
+}
+.last-login {
+
+  font-size: .8rem;
+  color: #999;
 }
 </style>
