@@ -137,27 +137,18 @@ export default (io, socket) => {
   // 接続が切れた時、そのクライアントをactiveUserから削除し、userテーブルのroomをnullにする
   socket.on("disconnect", (reason) => {
     db.serialize(() => {
+
       db.run("UPDATE user SET room = '' WHERE user.name = (SELECT active_user.name FROM active_user WHERE active_user.socket_id = ?)", [socket.id], (err) => {
-        if (err) {
-          console.error("Error deleting active user:", err);
-          return;
-        }
+        if (err) console.error("Error deleting active user:", err)
+      })
 
-        db.run("DELETE FROM active_user WHERE socket_id = ?", [socket.id], (err) => {
-          if (err) {
-            console.error("Error updating user room:", err);
-            return;
-          }
+      db.run("DELETE FROM active_user WHERE socket_id = ?", [socket.id], (err) => {
+        if (err) console.error("Error updating user room:", err)
+      })
 
-          db.all("SELECT name FROM active_user", [], (err, rows) => {
-            if (err) {
-              console.error("Error retrieving active users:", err);
-              return;
-            }
-
-            io.sockets.emit("refreshActiveUser", rows);
-          });
-        });
+      db.all("SELECT DISTINCT name FROM active_user", [], (err, rows) => {
+          if (err) console.error("Error retrieving active users:", err)
+          io.sockets.emit("refreshActiveUser", rows);
       });
     });
   });

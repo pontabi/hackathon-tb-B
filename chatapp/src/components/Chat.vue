@@ -3,7 +3,7 @@ import { inject, ref, reactive, onMounted, computed, watch } from "vue"
 import io from "socket.io-client"
 import { useRouter } from "vue-router";
 import ChatItem from "./ChatItem.vue";
-import getAvatar from "../../helpers/getAvatar";
+import ActiveUserSection from "./ActiveUserSection.vue";
 
 
 
@@ -282,7 +282,7 @@ const isDeletable = (chat) => {
     </v-navigation-drawer>
 
     <v-navigation-drawer location="right">
-      <v-list>
+      <!-- <v-list>
         <v-list-subheader>ONLINE USERS</v-list-subheader>
         <v-list-item
           v-for="user in activeUserList"
@@ -298,7 +298,9 @@ const isDeletable = (chat) => {
           </v-badge>
           <span class="pl-2">{{ user.name }}</span>
         </v-list-item>
-      </v-list>
+      </v-list> -->
+
+      <ActiveUserSection></ActiveUserSection>
 
       <div>
         <v-text-field
