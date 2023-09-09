@@ -219,11 +219,6 @@ const registerSocketEvent = () => {
     activeUserList.value = users
   })
 }
-// userListからnameで探索
-const getUserByName = (name) => {
-  const user = userList.value.find(el => el.name === name)
-  return user
-}
 // #endregion
 
 // 削除ボタンをつけるか否か
@@ -282,26 +277,7 @@ const isDeletable = (chat) => {
     </v-navigation-drawer>
 
     <v-navigation-drawer location="right">
-      <!-- <v-list>
-        <v-list-subheader>ONLINE USERS</v-list-subheader>
-        <v-list-item
-          v-for="user in activeUserList"
-          :key="user.name"
-        >
-          <v-badge dot color="success" offset-y="1">
-            <v-avatar color="secondary" size="32px" density="compact" >
-              <v-img
-                alt="Avatar"
-                :src="getUserByName(user.name).avatar_url"
-              ></v-img>
-            </v-avatar>
-          </v-badge>
-          <span class="pl-2">{{ user.name }}</span>
-        </v-list-item>
-      </v-list> -->
-
       <ActiveUserSection></ActiveUserSection>
-
       <div>
         <v-text-field
           variant="solo-filled"
@@ -341,7 +317,7 @@ const isDeletable = (chat) => {
       </div>
       </v-app-bar>
       <ul class="p-0">
-        <li class="item mt-4" v-for="chat in chatList" :key="chat.rowid">
+        <li class="item mt-4" v-for="chat in sortedChatList" :key="chat.rowid">
           <!-- <p>{{ getFullText(chat) }}</p>
             <button v-if="isDeletable(chat)" @click="onDelete(chat.rowid)" class="button-normal">Delete</button> -->
           <ChatItem :chat="chat" />
