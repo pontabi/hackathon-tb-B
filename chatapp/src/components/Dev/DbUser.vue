@@ -30,31 +30,33 @@ onMounted(() => {
       <a class="navbar-brand">DataBase - User</a>
     </div>
   </nav>
-  <table class="table" v-if="userList.length !== 0">
+  <v-table class="" v-if="userList.length !== 0">
     <thead>
       <tr>
-        <th scope="col">id</th>
-        <th scope="col">name</th>
-        <th scope="col">email</th>
-        <th scope="col">password</th>
-        <th scope="col">room</th>
-        <th scope="col">avatar_url</th>
+        <th>id</th>
+        <th>name</th>
+        <th>email</th>
+        <th>password</th>
+        <th>room</th>
+        <th>avatar_url</th>
+        <th>last_login</th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="user in showUserList" :key="user.rowid">
-        <th scope="row">{{ user.rowid }}</th>
+        <th>{{ user.rowid }}</th>
         <td>{{ user.name }}</td>
         <td>{{ user.email }}</td>
         <td>{{ user.password }}</td>
         <td>{{ user.room }}</td>
         <td>{{ user.avatar_url }}</td>
+        <td>{{ user.last_login }}</td>
       </tr>
     </tbody>
-  </table>
+  </v-table>
   <p v-else>UserListの要素が空です。</p>
   <router-link to="/" class="link">
-    <v-btn>TOPへ戻る</v-btn>
+    <v-btn class="ml-3">TOPへ戻る</v-btn>
   </router-link>
 </template>
 
@@ -62,25 +64,5 @@ onMounted(() => {
 .link {
   text-decoration: none;
   color: #000;
-}
-
-.area {
-  width: 500px;
-  border: 1px solid #000;
-  margin-top: 8px;
-}
-
-.item {
-  display: block;
-  white-space: pre-line;
-}
-
-.util-ml-8px {
-  margin-left: 8px;
-}
-
-.button-exit {
-  color: #000;
-  margin-top: 8px;
 }
 </style>

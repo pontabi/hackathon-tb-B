@@ -30,21 +30,21 @@ onMounted(() => {
       <a class="navbar-brand">DataBase - Chat</a>
     </div>
   </nav>
-  <table class="table" v-if="chatList.length !== 0">
+  <v-table v-if="chatList.length !== 0">
     <thead>
       <tr>
-        <th scope="col">id</th>
-        <th scope="col">user_id</th>
-        <th scope="col">content</th>
-        <th scope="col">type</th>
-        <th scope="col">to_who</th>
-        <th scope="col">created_at</th>
-        <th scope="col">room</th>
+        <th>id</th>
+        <th>user_id</th>
+        <th>content</th>
+        <th>type</th>
+        <th>to_who</th>
+        <th>created_at</th>
+        <th>room</th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="chat in showChatList" :key="chat.rowid">
-        <th scope="row">{{ chat.rowid }}</th>
+        <th>{{ chat.rowid }}</th>
         <td>{{ chat.user_id }}</td>
         <td>{{ chat.content }}</td>
         <td>{{ chat.type }}</td>
@@ -53,10 +53,10 @@ onMounted(() => {
         <td>{{ chat.room }}</td>
       </tr>
     </tbody>
-  </table>
+  </v-table>
   <p v-else>ChatListの要素が空です。</p>
   <router-link to="/" class="link">
-    <v-btn>TOPへ戻る</v-btn>
+    <v-btn class="ml-3">TOPへ戻る</v-btn>
   </router-link>
 </template>
 
@@ -64,25 +64,5 @@ onMounted(() => {
 .link {
   text-decoration: none;
   color: #000;
-}
-
-.area {
-  width: 500px;
-  border: 1px solid #000;
-  margin-top: 8px;
-}
-
-.item {
-  display: block;
-  white-space: pre-line;
-}
-
-.util-ml-8px {
-  margin-left: 8px;
-}
-
-.button-exit {
-  color: #000;
-  margin-top: 8px;
 }
 </style>
