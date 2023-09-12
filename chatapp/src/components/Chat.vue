@@ -185,11 +185,6 @@ const onReceiveDelete = (chatId) => {
 // イベント登録をまとめる
 const registerSocketEvent = () => {
 
-  // 入室イベントを受け取ったら実行
-  socket.on("enterEvent", (newUser) => {
-    onReceiveEnter(newUser)
-  })
-
   // 退室イベントを受け取ったら実行
   // socket.on("exitEvent", (leftUserName, time) => {
   //   onReceiveExit(leftUserName, time)
