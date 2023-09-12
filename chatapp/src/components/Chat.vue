@@ -32,7 +32,9 @@ const chatRooms = ([
 ])
 
 // falseで昇順
-const sortOrder = ref(false);
+const sortOrder = ref(false)
+// プロフィールダイアログの表示フラグ
+const showProfileDialog = ref(false)
 
 // ソートボタンが押された時に動作　　sortOrderの値を逆にする
 const sortOrderButton = () => {
@@ -243,10 +245,29 @@ const isDeletable = (chat) => {
           type="button"
           class="button-normal"
           icon="mdi-account"
+          @click="showProfileDialog = true"
           ></v-btn>
       <!--TODO: いい感じのところに名前を表示する-->
       <!--<p>{{ currentUser.name }}</p>-->
     </v-app-bar>
+
+    <!-- プロフィールダイアログ -->
+    <v-dialog v-model="showProfileDialog" width="auto" class="dialog-right-top">
+      <v-card class="p-3">
+        <v-card-title>Profile</v-card-title>
+        <v-card-text>
+          <div>
+            <strong>UserName:</strong> {{ currentUser.name }}
+          </div>
+          <div>
+            <strong>E-mail:</strong> {{ currentUser.email }}
+          </div>
+        </v-card-text>
+        <v-card-actions class="justify-end">
+          <v-btn @click="showProfileDialog = false">閉じる</v-btn><!-- ダイアログを閉じるボタン -->
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-navigation-drawer>
       <v-list>
