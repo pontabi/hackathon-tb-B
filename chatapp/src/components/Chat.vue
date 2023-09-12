@@ -12,6 +12,7 @@ const currentUser = inject("currentUser")
 const chatList = inject("chatList")
 const userList = inject("userList")
 const activeUserList = inject("activeUserList")
+const chatRooms = inject("chatRooms")
 // #endregion
 
 // #region local variable
@@ -22,14 +23,6 @@ const router = useRouter()
 // #region reactive variable
 const chatContent = ref("")
 const address = ref("")
-
-const chatRooms = ([
-  'ルームA',
-  'ルームB',
-  'ルームC',
-  'ルームD',
-  'ルームE',
-])
 
 // falseで昇順
 const sortOrder = ref(false)
@@ -43,13 +36,6 @@ const sortOrderButton = () => {
 
 // sortOrderがfalseなら昇順、trueなら降順
 const sortedChatList = computed(() => {
-  //const roomIndex = chatRooms.indexOf(currentUser.room)
-  //console.log(roomIndex)
-  //if (sortOrder.value) {
-  //  return chatList.value.slice().reverse();
-  //} else {
-  //  return chatList.value.slice();
-  //}
   if (sortOrder.value) {
     return chatList.value.slice().reverse();
   } else {
@@ -65,25 +51,39 @@ onMounted(() => {
 })
 // #endregion
 
-// #region browser event handler
-// 投稿メッセージをサーバに送信する
-const onPost = () => {
+const sendMessage = (type) => {
   // 空、空行、スペースのみの場合は送信しない
   if (!chatContent.value.trim()) return;
   const created_at = new Date().toISOString()
   const newChat = {
     user_id: currentUser.rowid,
     content: chatContent.value,
-    type: 'chat',
+    type: type,
     to_who: address.value,
     created_at: created_at,
     room: currentUser.room
   }
   socket.emit("postEvent", newChat)
-
   // 入力欄を初期化
   chatContent.value = ""
   address.value = ""
+}
+
+// #region browser event handler
+// 投稿メッセージをサーバに送信する
+const onPost = (e) => {
+  // レイアウト固定のため、現在は未稼働
+  // Enter + Shiftで改行しつつ、続けて編集できるようにしたい
+  // if ( e.key == "Enter" && e.shiftKey ) return
+  sendMessage('chat')
+}
+
+// メモを画面上に表示する
+const onMemo = (e) => {
+  // レイアウト固定のため、現在は未稼働
+  // Enter + Shiftで改行しつつ、続けて編集できるようにしたい
+  // if ( e.key == "Enter" && e.shiftKey ) return
+  sendMessage('memo')
 }
 
 // 投稿削除イベントをサーバーに送信する
@@ -111,23 +111,6 @@ const onExit = () => {
   router.push({ name: "login" })
 }
 
-// メモを画面上に表示する
-const onMemo = () => {
-  console.log(currentUser.name)
-  // 空、空行、スペースのみの場合は送信しない
-  if (!chatContent.value.trim()) return;
-  const created_at = new Date().toISOString()
-  const newChat = {
-    user_id: currentUser.rowid,
-    content: chatContent.value,
-    type: 'memo',
-    created_at: created_at,
-  }
-  socket.emit("memoEvent", newChat)
-  // 入力欄を初期化
-  chatContent.value = ""
-  address.value = ""
-}
 
 const onChange = (changeRoom) => {
   currentUser.room = changeRoom
@@ -135,11 +118,11 @@ const onChange = (changeRoom) => {
 }
 
 // 休止フラグ
-const paused = ref(false)
+//const paused = ref(false)
 // 一時休止にする 休止中はほかの人からの投稿が表示されないようにしたい。
-const onPause = () => {
-  paused.value = !paused.value
-}
+//const onPause = () => {
+//  paused.value = !paused.value
+//}
 
 // #endregion
 
@@ -152,21 +135,6 @@ const onReceiveEnter = (newUser) => {
 
 // サーバから受信した投稿メッセージを画面上に表示する
 const onReceivePost = (newChat) => {
-  // if (!paused.value) {
-  //   if(address==""){
-  //     addChat(nameValue, contentValue, "chat", time)
-  //   } else if(address==userName.value){
-  //     addChat(nameValue, contentValue, "DMReceive", time)
-  //   } else if(nameValue==userName.value){
-  //     addChat(nameValue, contentValue, "DMSend", time)
-  //   }
-  // } else {
-  //   console.log("受信を一時停止しています")
-  // }
-  //const roomIndex = chatRooms.indexOf(currentUser.room)
-  //console.log(roomIndex)
-  //chatList[roomIndex].push(newChat)
-  //console.log(chatList[0])
   chatList.value.push(newChat)
 }
 
@@ -197,14 +165,9 @@ const registerSocketEvent = () => {
 
   // 投稿イベントを受け取ったら実行
   socket.on("postEvent", (newChat) => {
-    console.log(newChat.room + "に送った")
     onReceivePost(newChat)
   })
-
-  socket.on("roomEvent", (newChat) => {
-    console.log(newChat.room + "に送られました")
-    //onChange(newChat.room)
-  })
+  
   // 削除イベントを受け取ったら実行
   socket.on("deleteEvent", (chatId) => {
     onReceiveDelete(chatId)
