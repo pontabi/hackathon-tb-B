@@ -49,7 +49,7 @@ const currentUser = inject('currentUser')
     </div>
   </div>
 
-  <div v-else-if="chat.type === 'memo' && currentUser.name === sender.name">
+  <div v-else-if="chat.type === 'memo' && currentUser.name === sender.name && currentUser.room === chat.room">
     <div class="pb-2 text-body-2">
       あなた<span class="text-caption">（{{ sender.name }}）のメモ</span>
     </div>

@@ -10,6 +10,7 @@ const currentUser = inject("currentUser")
 const chatList = inject("chatList")
 const userList = inject("userList")
 const activeUserList = inject("activeUserList")
+const chatRooms = inject("chatRooms")
 // #endregion
 
 // #region local variable
@@ -24,13 +25,7 @@ const inputRoomName = ref("")
 const loginFailed = ref(false)
 // #endregion
 
-const chatRooms = ([
-  'ルームA',
-  'ルームB',
-  'ルームC',
-  'ルームD',
-  'ルームE',
-])
+
 
 // #region lifecycle
 onMounted(() => {
