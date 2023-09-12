@@ -11,6 +11,7 @@ const currentUser = inject("currentUser")
 const chatList = inject("chatList")
 const userList = inject("userList")
 const activeUserList = inject("activeUserList")
+const chatRooms = inject("chatRooms")
 // #endregion
 
 // #region local variable
@@ -36,7 +37,7 @@ const registerSocketEvent = () => {
 
   // signupSuccessEventイベントを受け取ったら実行
   socket.on("signupSuccessEvent", (user) => {
-    socket.emit("loginEvent", user.name, user.password, "ルームA")
+    socket.emit("loginEvent", user.name, user.password, chatRooms[0])
     router.push({ name: "chat" })
   })
   // 入室イベントを受け取った時の処理
@@ -45,7 +46,7 @@ const registerSocketEvent = () => {
     currentUser.rowid = enteredUser.rowid
     currentUser.name = enteredUser.name
     currentUser.email = enteredUser.email
-    currentUser.room = "ルームA"
+    currentUser.room = chatRooms[0]
 
     // getAllUserEvetを送信
     socket.emit("getAllUserEvent", currentUser.room)
