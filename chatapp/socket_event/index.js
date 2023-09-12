@@ -57,7 +57,7 @@ export default (io, socket) => {
             const avatar_url = getAvatar(newUser.email, 100)
             const last_login = new Date().toISOString()
             db.run("INSERT INTO user(name, email, password, room, avatar_url, last_login) VALUES(?, ?, ?, ?, ?, ?)",
-                    [newUser.name, newUser.email, newUser.password, "ルームA", avatar_url, last_login],
+                    [newUser.name, newUser.email, newUser.password, newUser.room, avatar_url, last_login],
                     function(err) {
                         if (err) return console.log(err.message)
                         newUser.rowid = this.lastID
@@ -193,7 +193,6 @@ export default (io, socket) => {
     [changedRoom, userId],
     function(err) {
       if (err) return console.log(err.message)
-      io.sockets.emit("roomEvent", changedRoom)
     })
   })
 
