@@ -126,7 +126,8 @@ const submit = handleSubmit(values => {
   const newUser = {
     name: values.name,
     email: values.email,
-    password: password
+    password: password,
+    room:chatRooms[0]
   }
 
   // signupEventを送信
