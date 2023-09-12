@@ -10,13 +10,22 @@ const userList = ref([])
 const chatList = ref([])
 // db上の全アクティブユーザー
 const activeUserList = ref([])
+// チャットルーム一覧
+const chatRooms = ([
+  'ROOM A',
+  'ROOM B',
+  'ROOM C',
+  'ROOM D',
+  'ROOM E',
+])
 // #endregion
-
+  
 // #region global variable
 provide("currentUser", currentUser)
 provide("userList", userList)
 provide("chatList", chatList)
 provide("activeUserList", activeUserList)
+provide("chatRooms", chatRooms)
 // #endregion
 </script>
 
