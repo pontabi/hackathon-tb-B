@@ -83,8 +83,11 @@ export default (io, socket) => {
               // ログインしたユーザー情報をloginSuccessEventへ返す
               socket.emit("loginSuccessEvent", row)
 
-              // ログインしたユーザー情報を他のクライアントにも送信
-              socket.broadcast.emit("enterEvent", row)
+              // 全クライアントのuserListを更新
+              db.all(GET_ALL_USER_SQL, [], (err, rows) => {
+                if (err) throw err
+                socket.broadcast.emit("getAllUserEvent", rows)
+              })
             } else {
               socket.emit("loginFailedEvent")
             }
