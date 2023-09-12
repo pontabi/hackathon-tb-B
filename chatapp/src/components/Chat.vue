@@ -248,7 +248,7 @@ const isDeletable = (chat) => {
           @click="showProfileDialog = true"
           ></v-btn>
       <!--TODO: いい感じのところに名前を表示する-->
-      <!--<p>{{ currentUser.name }}</p>-->
+      <p class="m-0 mr-2">{{ currentUser.name }}</p>
     </v-app-bar>
 
     <!-- プロフィールダイアログ -->
