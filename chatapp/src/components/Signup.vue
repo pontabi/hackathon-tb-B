@@ -101,7 +101,7 @@ const { handleSubmit, handleReset } = useForm({
       return '2文字以上入力してください'
     },
     email (value) {
-      if (/^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(value)) return true
+      if (/^[a-zA-Z0-9.-]+@[a-z.-]+\.[a-z]+$/i.test(value)) return true
 
       return '正しいe-mailを入力してください'
     },
